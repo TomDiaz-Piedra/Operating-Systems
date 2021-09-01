@@ -31,6 +31,18 @@ module TSOS {
                                   "- Displays the current version data.");
             this.commandList[this.commandList.length] = sc;
 
+            //whereami
+            sc = new ShellCommand(this.shellVer,
+                "whereami",
+                "- Displays Location.");
+            this.commandList[this.commandList.length] = sc;
+
+            //date
+            sc = new ShellCommand(this.shellVer,
+                "date",
+                "- Displays the Current Date.");
+            this.commandList[this.commandList.length] = sc;
+
             // help
             sc = new ShellCommand(this.shellHelp,
                                   "help",
