@@ -66,6 +66,15 @@ var TSOS;
             document.getElementById("btnReset").disabled = false;
             // .. set focus on the OS console display ...
             document.getElementById("display").focus();
+            function updateClock() {
+                let n = new Date(); // current date
+                let time = n.getHours() + ':' + n.getMinutes() + ":" + n.getSeconds();
+                let date = (n.getUTCMonth() + 1) + "/" + n.getUTCDate() + "/" + n.getFullYear();
+                // set the content of the element with the ID time to the formatted string
+                document.getElementById('time').innerHTML = time;
+                document.getElementById('date').innerHTML = date;
+            }
+            setInterval(updateClock, 1000);
             // ... Create and initialize the CPU (because it's part of the hardware)  ...
             _CPU = new TSOS.Cpu(); // Note: We could simulate multi-core systems by instantiating more than one instance of the CPU here.
             _CPU.init(); //       There's more to do, like dealing with scheduling and such, but this would be a start. Pretty cool.
