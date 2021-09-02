@@ -1,7 +1,7 @@
 /* TSOS.css */
 
 body {
-  background: #909193 url(distrib/images/linen.png) repeat;
+  background: #909193 url(distrib/images/portalbackground.jpg) repeat;
   font-family: Helvetica, Verdana, Arial, sans-serif;
   font-size: 12pt;
   font-weight: normal;
@@ -9,7 +9,7 @@ body {
 }
 
 h1 {
-  color: black;
+  color: blue;
   font-size: 24pt;
   font-weight: normal;
   font-style: normal;
@@ -17,7 +17,7 @@ h1 {
 }
 
 h2 {
-  color: black;
+  color: darkorange;
   font-size: 20pt;
   font-weight: normal;
   font-style: normal;
@@ -31,13 +31,27 @@ h3 {
 }
 
 #display {
-  background-color:#DFDBC3;
-  border: 2px solid red;
+  background-color:white;
+  border: 4px solid darkorange;
+  border-image: linear-gradient(to right, darkorange , deepskyblue);
+  border-image-slice: 1;
   cursor: default;
 }
 
 .normal_button {
   width: 100px;
+  border-image: linear-gradient(to right, darkorange , deepskyblue);
+  border-image-slice: 1;
+  color: darkorange;
+}
+#cube{
+  position: fixed;
+  z-index:100;
+  width:50px;
+  height:50px;
+  top:80%;
+  left:28%;
+
 }
 
 .footerText {

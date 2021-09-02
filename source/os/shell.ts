@@ -32,15 +32,21 @@ module TSOS {
             this.commandList[this.commandList.length] = sc;
 
             //whereami
-            sc = new ShellCommand(this.shellVer,
+            sc = new ShellCommand(this.shellWhereami,
                 "whereami",
                 "- Displays Location.");
             this.commandList[this.commandList.length] = sc;
 
             //date
-            sc = new ShellCommand(this.shellVer,
+            sc = new ShellCommand(this.shellDate,
                 "date",
                 "- Displays the Current Date.");
+            this.commandList[this.commandList.length] = sc;
+
+            //cube
+            sc = new ShellCommand(this.shellCube,
+                "cube",
+                "- Summons Cube");
             this.commandList[this.commandList.length] = sc;
 
             // help
@@ -217,6 +223,20 @@ module TSOS {
 
         public shellVer(args: string[]) {
             _StdOut.putText(APP_NAME + " version " + APP_VERSION);
+        }
+
+        public shellDate(args: string[]) {
+            let dateTime = new Date();
+            _StdOut.putText("Date: " + dateTime);
+        }
+
+        public shellWhereami(args: string[]) {
+            _StdOut.putText("Location: Aperture Science Laboratory");
+        }
+
+        public shellCube(args: string[]) {
+            let cube = document.getElementById('cube') as HTMLImageElement;
+            cube.src = "distrib/images/cube.png";
         }
 
         public shellHelp(args: string[]) {

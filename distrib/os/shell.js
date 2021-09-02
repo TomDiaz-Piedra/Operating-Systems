@@ -25,10 +25,13 @@ var TSOS;
             sc = new TSOS.ShellCommand(this.shellVer, "ver", "- Displays the current version data.");
             this.commandList[this.commandList.length] = sc;
             //whereami
-            sc = new TSOS.ShellCommand(this.shellVer, "whereami", "- Displays Location.");
+            sc = new TSOS.ShellCommand(this.shellWhereami, "whereami", "- Displays Location.");
             this.commandList[this.commandList.length] = sc;
             //date
-            sc = new TSOS.ShellCommand(this.shellVer, "date", "- Displays the Current Date.");
+            sc = new TSOS.ShellCommand(this.shellDate, "date", "- Displays the Current Date.");
+            this.commandList[this.commandList.length] = sc;
+            //cube
+            sc = new TSOS.ShellCommand(this.shellCube, "cube", "- Summons Cube");
             this.commandList[this.commandList.length] = sc;
             // help
             sc = new TSOS.ShellCommand(this.shellHelp, "help", "- This is the help command. Seek help.");
@@ -174,6 +177,17 @@ var TSOS;
         // actual parameter list when this function is called, so I feel like we need it.
         shellVer(args) {
             _StdOut.putText(APP_NAME + " version " + APP_VERSION);
+        }
+        shellDate(args) {
+            let dateTime = new Date();
+            _StdOut.putText("Date: " + dateTime);
+        }
+        shellWhereami(args) {
+            _StdOut.putText("Location: Aperture Science Laboratory");
+        }
+        shellCube(args) {
+            let cube = document.getElementById('cube');
+            cube.src = "distrib/images/cube.png";
         }
         shellHelp(args) {
             _StdOut.putText("Commands:");
