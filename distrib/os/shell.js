@@ -213,6 +213,36 @@ var TSOS;
                     case "help":
                         _StdOut.putText("Help displays a list of (hopefully) valid commands.");
                         break;
+                    case "ver":
+                        _StdOut.putText("Ver displays the current OS version.");
+                        break;
+                    case "whereami":
+                        _StdOut.putText("Whereami displays your current Location.");
+                        break;
+                    case "date":
+                        _StdOut.putText("Date displays current Date and Time.");
+                        break;
+                    case "cube":
+                        _StdOut.putText("Cube summons a test cube out of the bottom blue portal");
+                        break;
+                    case "shutdown":
+                        _StdOut.putText("Shuts down the virtual OS but leaves the underlying host..");
+                        break;
+                    case "cls":
+                        _StdOut.putText("Cls clears the screen and resets cursor position.");
+                        break;
+                    case "trace":
+                        _StdOut.putText("trace turns on/off OS tracing");
+                        break;
+                    case "rot13":
+                        _StdOut.putText("rot13 performs rot13 obfuscation on string given");
+                        break;
+                    case "prompt":
+                        _StdOut.putText("Prompt sets the prompt to User input");
+                        break;
+                    case "man":
+                        _StdOut.putText("Man gives more information on command given, if it exists.");
+                        break;
                     // TODO: Make descriptive MANual page entries for the the rest of the shell commands here.
                     default:
                         _StdOut.putText("No manual entry for " + args[0] + ".");
