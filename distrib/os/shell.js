@@ -24,6 +24,8 @@ var TSOS;
             // ver
             sc = new TSOS.ShellCommand(this.shellVer, "ver", "- Displays the current version data.");
             this.commandList[this.commandList.length] = sc;
+            sc = new TSOS.ShellCommand(this.shellLoad, "load", "- Loads user input.");
+            this.commandList[this.commandList.length] = sc;
             //whereami
             sc = new TSOS.ShellCommand(this.shellWhereami, "whereami", "- Displays Location.");
             this.commandList[this.commandList.length] = sc;
@@ -184,6 +186,19 @@ var TSOS;
         }
         shellWhereami(args) {
             _StdOut.putText("Location: Aperture Science Laboratory");
+        }
+        shellLoad(args) {
+            var load;
+            load = document.getElementById("taProgramInput");
+            var ans = load.value.trim();
+            ans.replace(/\s/g, "");
+            var re = /[0-9A-Fa-f]{1}/g;
+            if (re.test(ans)) {
+                _StdOut.putText("Valid");
+            }
+            else {
+                _StdOut.putText("InValid");
+            }
         }
         shellCube(args) {
             let cube = document.getElementById('cube');

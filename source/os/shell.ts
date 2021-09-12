@@ -31,6 +31,12 @@ module TSOS {
                                   "- Displays the current version data.");
             this.commandList[this.commandList.length] = sc;
 
+            sc = new ShellCommand(this.shellLoad,
+                "load",
+                "- Loads user input.");
+            this.commandList[this.commandList.length] = sc;
+
+
             //whereami
             sc = new ShellCommand(this.shellWhereami,
                 "whereami",
@@ -233,6 +239,23 @@ module TSOS {
         public shellWhereami(args: string[]) {
             _StdOut.putText("Location: Aperture Science Laboratory");
         }
+
+        public shellLoad(args) {
+            var load: any;
+            load = document.getElementById("taProgramInput");
+            var ans = load.value.trim();
+            ans.replace(/\s/g, "");
+
+            var re = /[0-9A-Fa-f]{1}/g;
+            if(re.test(ans)) {
+                _StdOut.putText("Valid");
+            } else {
+                _StdOut.putText("InValid");
+            }
+
+
+        }
+
 
         public shellCube(args: string[]) {
             let cube = document.getElementById('cube') as HTMLImageElement;

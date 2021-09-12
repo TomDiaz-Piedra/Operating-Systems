@@ -36,17 +36,16 @@ var TSOS;
                     _OsShell.handleInput(this.buffer);
                     // ... and reset our buffer.
                     this.buffer = "";
+                    //Backspace
                 }
                 else if (chr === String.fromCharCode(8)) {
-                    // Implement backspace by removing last element in the buffer
-                    // and cover printed value by the area of the value
-                    // when reach begin of line go to previous line if there is a previous line
-                    var remove_txt = this.buffer.substring(this.buffer.length - 1, this.buffer.length);
+                    //"Deletes" the last character by covering it up using clearRect
+                    //Grabs the area and place the previous character was and covers it up thereby deleting it
+                    var deleteTxt = this.buffer.substring(this.buffer.length - 1, this.buffer.length);
                     this.buffer = this.buffer.substring(0, this.buffer.length - 1);
-                    var offset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, remove_txt);
+                    var offset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, deleteTxt);
                     this.currentXPosition = this.currentXPosition - offset;
-                    var height = -1 * (_DefaultFontSize
-                        + _DrawingContext.fontDescent(this.currentFont, this.currentFontSize)
+                    var height = -1 * (_DefaultFontSize + _DrawingContext.fontDescent(this.currentFont, this.currentFontSize)
                         + _FontHeightMargin);
                     _DrawingContext.clearRect(this.currentXPosition, this.currentYPosition + _FontHeightMargin, offset, height);
                 }
