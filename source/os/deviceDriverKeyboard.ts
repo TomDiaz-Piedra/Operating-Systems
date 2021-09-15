@@ -44,8 +44,6 @@ module TSOS {
                     chr = String.fromCharCode(keyCode + 32); // Lowercase a-z
                 }
 
-
-
                 // TODO: Check for caps-lock and handle as shifted if so.
                 _KernelInputQueue.enqueue(chr);
             } else if ( keyCode == 32 || keyCode == 13 || keyCode === 8 || keyCode == 9) { // enter, space, delete, and tab

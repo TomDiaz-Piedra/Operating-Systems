@@ -31,11 +31,17 @@ module TSOS {
                                   "- Displays the current version data.");
             this.commandList[this.commandList.length] = sc;
 
+            //load
             sc = new ShellCommand(this.shellLoad,
                 "load",
                 "- Loads user input.");
             this.commandList[this.commandList.length] = sc;
 
+            //status
+            sc = new ShellCommand(this.shellStatus,
+                "status",
+                "- Changes status message to user input");
+            this.commandList[this.commandList.length] = sc;
 
             //whereami
             sc = new ShellCommand(this.shellWhereami,
@@ -53,6 +59,12 @@ module TSOS {
             sc = new ShellCommand(this.shellCube,
                 "cube",
                 "- Summons Cube");
+            this.commandList[this.commandList.length] = sc;
+
+            //cube
+            sc = new ShellCommand(this.shellBSOD,
+                "bsod",
+                "- Displays Blue Screen of Death");
             this.commandList[this.commandList.length] = sc;
 
             // help
@@ -231,6 +243,11 @@ module TSOS {
             _StdOut.putText(APP_NAME + " version " + APP_VERSION);
         }
 
+        public shellStatus(args: string[]) {
+            var str = args.toString();
+            document.getElementById("status").innerHTML=str;
+        }
+
         public shellDate(args: string[]) {
             let dateTime = new Date();
             _StdOut.putText("Date: " + dateTime);
@@ -260,6 +277,12 @@ module TSOS {
         public shellCube(args: string[]) {
             let cube = document.getElementById('cube') as HTMLImageElement;
             cube.src = "distrib/images/cube.png";
+        }
+
+        public shellBSOD(args: string[]) {
+            TSOS.Control.hostBtnHaltOS_click(this);
+            let bsod = document.getElementById('popup') as HTMLImageElement;
+            bsod.style.display="block";
         }
 
         public shellHelp(args: string[]) {

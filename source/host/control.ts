@@ -95,8 +95,11 @@ module TSOS {
                 // set the content of the element with the ID time to the formatted string
                 document.getElementById('time').innerHTML = time;
                 document.getElementById('date').innerHTML = date;
+
             }
             setInterval(updateClock, 1000);
+            //Initialize Status Message
+            document.getElementById("status").innerHTML = "Potato";
 
 
 

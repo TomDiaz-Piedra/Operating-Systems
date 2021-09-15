@@ -35,6 +35,7 @@
    
 </head>
 <img src="distrib/images/null.png" alt="Portal Cube" id="cube">
+<img src="distrib/images/bsod.png" alt="BSOD" id="popup" display="none">
 
 <body onload="onDocumentLoad()">
 
@@ -78,9 +79,10 @@
 
    <div id="divLog" style="margin-left:1000px;">
       <label>
-         <label style="color:deepskyblue;">Host Log</label>
-         <label id ="time">date</label>
-         <label id="date">time</label>
+         <label style="color:deepskyblue;">Host Log</label><br>
+         <label>Date: </label><b id ="date"></b><br>
+         <label>Time: </label><b id="time"></b><br>
+         <label>Status: </label><b id="status"></b>
 
          <br>
          <textarea name="taHostLog"

@@ -24,7 +24,11 @@ var TSOS;
             // ver
             sc = new TSOS.ShellCommand(this.shellVer, "ver", "- Displays the current version data.");
             this.commandList[this.commandList.length] = sc;
+            //load
             sc = new TSOS.ShellCommand(this.shellLoad, "load", "- Loads user input.");
+            this.commandList[this.commandList.length] = sc;
+            //status
+            sc = new TSOS.ShellCommand(this.shellStatus, "status", "- Changes status message to user input");
             this.commandList[this.commandList.length] = sc;
             //whereami
             sc = new TSOS.ShellCommand(this.shellWhereami, "whereami", "- Displays Location.");
@@ -34,6 +38,9 @@ var TSOS;
             this.commandList[this.commandList.length] = sc;
             //cube
             sc = new TSOS.ShellCommand(this.shellCube, "cube", "- Summons Cube");
+            this.commandList[this.commandList.length] = sc;
+            //cube
+            sc = new TSOS.ShellCommand(this.shellBSOD, "bsod", "- Displays Blue Screen of Death");
             this.commandList[this.commandList.length] = sc;
             // help
             sc = new TSOS.ShellCommand(this.shellHelp, "help", "- This is the help command. Seek help.");
@@ -180,6 +187,10 @@ var TSOS;
         shellVer(args) {
             _StdOut.putText(APP_NAME + " version " + APP_VERSION);
         }
+        shellStatus(args) {
+            var str = args.toString();
+            document.getElementById("status").innerHTML = str;
+        }
         shellDate(args) {
             let dateTime = new Date();
             _StdOut.putText("Date: " + dateTime);
@@ -203,6 +214,11 @@ var TSOS;
         shellCube(args) {
             let cube = document.getElementById('cube');
             cube.src = "distrib/images/cube.png";
+        }
+        shellBSOD(args) {
+            TSOS.Control.hostBtnHaltOS_click(this);
+            let bsod = document.getElementById('popup');
+            bsod.style.display = "block";
         }
         shellHelp(args) {
             _StdOut.putText("Commands:");
