@@ -43,6 +43,10 @@ var TSOS;
                 chr = String.fromCharCode(keyCode);
                 _KernelInputQueue.enqueue(chr);
             }
+            else if (keyCode == 38 || keyCode == 40) { // Arrow up and down
+                chr = String.fromCharCode(keyCode);
+                _KernelInputQueue.enqueue(chr);
+            }
             else if (((keyCode >= 48) && (keyCode <= 57))) {
                 if (isShifted) {
                     switch (keyCode) {

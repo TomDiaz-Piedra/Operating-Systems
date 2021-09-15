@@ -13,6 +13,8 @@ module TSOS {
                     public currentFontSize = _DefaultFontSize,
                     public currentXPosition = 0,
                     public currentYPosition = _DefaultFontSize,
+                    public commandHist = [],
+                    public commandIndex = 0,
                     public buffer = "") {
         }
 
@@ -39,6 +41,13 @@ module TSOS {
                     // The enter key marks the end of a console command, so ...
                     // ... tell the shell ...
                     _OsShell.handleInput(this.buffer);
+
+                    //Add input to history for Arrow Key Functionality
+                    //Can't recall previous commands without recording them somewhere
+                    //Add new Index
+                    this.commandHist.push(this.buffer);
+                    this.commandIndex=this.commandHist.length;
+
                     // ... and reset our buffer.
                     this.buffer = "";
                 //Backspace
@@ -54,6 +63,13 @@ module TSOS {
                         _DrawingContext.clearRect(this.currentXPosition, this.currentYPosition + _FontHeightMargin, offset, height);
 
                     }
+                else if(chr===String.fromCharCode(38)){ //Arrow Up
+                    this.ArrowKey("up");
+                }
+                else if(chr===String.fromCharCode(40)){ //Arrow Down
+                    this.ArrowKey("down");
+                }
+
 
                 else {
                     // This is a "normal" character, so ...
@@ -83,6 +99,42 @@ module TSOS {
             }
          }
 
+         //Process Arrow Key Input
+        public ArrowKey(code){
+            if(this.commandHist.length > 0){
+                let tempBuffer = this.buffer;
+                //Clears the line before going through command history
+                for(var i =0;i<tempBuffer.length;i++){
+                    //If it looks familiar it is, this is the delete key functionality
+                    var deleteTxt = this.buffer.substring(this.buffer.length - 1, this.buffer.length);
+                    this.buffer = this.buffer.substring(0, this.buffer.length - 1);
+                    var offset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, deleteTxt);
+                    this.currentXPosition = this.currentXPosition - offset;
+                    var height = -1 * (_DefaultFontSize + _DrawingContext.fontDescent(this.currentFont, this.currentFontSize)
+                        + _FontHeightMargin);
+                    _DrawingContext.clearRect(this.currentXPosition, this.currentYPosition + _FontHeightMargin, offset, height);
+                }
+                if(code==="up"){
+                    //check if index is greater than 0
+                    if(this.commandIndex>0){
+                        //Set buffer to the last buffer and increment index
+                        this.buffer=this.commandHist[--this.commandIndex];
+
+                    }
+                }
+                else if(code==="down"){
+                    //check if there is something there
+                    if(this.commandIndex<this.commandHist.length-1){
+                        //set buffer to previous one
+                        this.buffer=this.commandHist[++this.commandIndex];
+                    }
+                }
+                //Put on canvas
+                _StdOut.putText(this.buffer);
+            }
+
+        }
+
         public advanceLine(): void {
             this.currentXPosition = 0;
             /*
@@ -94,14 +146,18 @@ module TSOS {
             this.currentYPosition += _DefaultFontSize + 
                                      _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
                                      _FontHeightMargin;
-
+            //Scrolling, done properly, not just an HTML built in Scroll-bar anymore
+            //Checks if the text is at the bottom of the canvas
             if (this.currentYPosition > _Canvas.height) {
+                //Record the current screen
                 var img = _DrawingContext.getImageData(0, 20, _Canvas.width, _Canvas.height);
+                //Put the screen back
                 _DrawingContext.putImageData(img, 0, 0);
+                //Set ourselves back on the last line of the canvas
                 this.currentYPosition = 495;
             }
         };
-            // TODO: Handle scrolling. (iProject 1)
+
         }
     }
 
