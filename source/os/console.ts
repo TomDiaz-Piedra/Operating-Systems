@@ -60,6 +60,49 @@ module TSOS {
                 else if(chr===String.fromCharCode(40)){ //Arrow Down
                     this.ArrowKey("down");
                 }
+                else if(chr===String.fromCharCode(9)){ // Tab Key
+                    //Array of all available commands
+                    var commands = ['ver','help','whereami','cube','load',
+                    'status','bsod','shutdown','cls','man','trace',
+                    'rot13','prompt'];
+
+                    //Array for all similar commands that start with the same chr
+                    var sim = [];
+
+                    //Grabs all commands that start with the current buffer
+                    //Puts those commands into a list
+                    for(let i =0; i<commands.length; ++i){
+                        if(commands[i].startsWith(this.buffer)){
+                            sim.push(commands[i]);
+
+
+                        }
+                    }
+                    //If we only have 1 similar command we just clear the line
+                    //and write the command in
+                    if(sim.length===1){
+                        for(let k=0;k<this.buffer.length;++k){
+                            this.backspace();
+                        }
+                        _StdOut.putText(sim[0]);
+                        _StdOut.buffer=sim[0];
+                    }
+                    //If there is more than 1 command we clear the line,
+                    //and write the commands for the user to see
+                    else{
+                        for(let f=0;f<this.buffer.length;++f){
+                            this.backspace();
+                        }
+                        this.advanceLine();
+                        _StdOut.putText("Similar Commands");
+                        this.advanceLine();
+                        for(let x=0;x<sim.length;++x){
+                            _StdOut.putText(`  ${sim[x]}`);
+                            this.advanceLine();
+                        }
+                        _OsShell.putPrompt();
+                    }
+                }
 
 
                 else {
