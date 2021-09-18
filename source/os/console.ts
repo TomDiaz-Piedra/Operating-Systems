@@ -52,16 +52,7 @@ module TSOS {
                     this.buffer = "";
                 //Backspace
                 }else if(chr===String.fromCharCode(8)){
-                        //"Deletes" the last character by covering it up using clearRect
-                        //Grabs the area and place the previous character was and covers it up thereby deleting it
-                        var deleteTxt = this.buffer.substring(this.buffer.length - 1, this.buffer.length);
-                        this.buffer = this.buffer.substring(0, this.buffer.length - 1);
-                        var offset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, deleteTxt);
-                        this.currentXPosition = this.currentXPosition - offset;
-                        var height = -1 * (_DefaultFontSize + _DrawingContext.fontDescent(this.currentFont, this.currentFontSize)
-                            + _FontHeightMargin);
-                        _DrawingContext.clearRect(this.currentXPosition, this.currentYPosition + _FontHeightMargin, offset, height);
-
+                        this.backspace();
                     }
                 else if(chr===String.fromCharCode(38)){ //Arrow Up
                     this.ArrowKey("up");
@@ -99,20 +90,26 @@ module TSOS {
             }
          }
 
+         public backspace(){
+             //"Deletes" the last character by covering it up using clearRect
+             //Grabs the area and place the previous character was and covers it up thereby deleting it
+             //Made it into its own function as I needed to use it for clearing the text in arrow key functionality
+             var deleteTxt = this.buffer.substring(this.buffer.length - 1, this.buffer.length);
+             this.buffer = this.buffer.substring(0, this.buffer.length - 1);
+             var offset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, deleteTxt);
+             this.currentXPosition = this.currentXPosition - offset;
+             var height = -1 * (_DefaultFontSize + _DrawingContext.fontDescent(this.currentFont, this.currentFontSize)
+                 + _FontHeightMargin);
+             _DrawingContext.clearRect(this.currentXPosition, this.currentYPosition + _FontHeightMargin, offset, height);
+         }
+
          //Process Arrow Key Input
         public ArrowKey(code){
             if(this.commandHist.length > 0){
                 let tempBuffer = this.buffer;
                 //Clears the line before going through command history
                 for(var i =0;i<tempBuffer.length;i++){
-                    //If it looks familiar it is, this is the delete key functionality
-                    var deleteTxt = this.buffer.substring(this.buffer.length - 1, this.buffer.length);
-                    this.buffer = this.buffer.substring(0, this.buffer.length - 1);
-                    var offset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, deleteTxt);
-                    this.currentXPosition = this.currentXPosition - offset;
-                    var height = -1 * (_DefaultFontSize + _DrawingContext.fontDescent(this.currentFont, this.currentFontSize)
-                        + _FontHeightMargin);
-                    _DrawingContext.clearRect(this.currentXPosition, this.currentYPosition + _FontHeightMargin, offset, height);
+                  this.backspace();
                 }
                 if(code==="up"){
                     //check if index is greater than 0
