@@ -342,6 +342,15 @@ module TSOS {
                     case "man":
                         _StdOut.putText("Man gives more information on command given, if it exists.");
                         break;
+                    case "load":
+                        _StdOut.putText("Load, will load User Program, Only hex-code is valid.");
+                        break;
+                    case "status":
+                        _StdOut.putText("Status changed the user's status message.");
+                        break;
+                    case "bsod":
+                        _StdOut.putText("Bsod will crash the Operating System and display an error message");
+                        break;
                     // TODO: Make descriptive MANual page entries for the the rest of the shell commands here.
                     default:
                         _StdOut.putText("No manual entry for " + args[0] + ".");
