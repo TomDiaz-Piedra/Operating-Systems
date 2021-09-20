@@ -181,7 +181,7 @@ module TSOS {
             buffer = Utils.trim(buffer);
 
             // 2. Lower-case it.
-            buffer = buffer.toLowerCase();
+            //buffer = buffer.toLowerCase();
 
             // 3. Separate on spaces so we can determine the command and command-line args, if any.
             var tempList = buffer.split(" ");
@@ -190,6 +190,8 @@ module TSOS {
             var cmd = tempList.shift();  // Yes, you can do that to an array in JavaScript. See the Queue class.
             // 4.1 Remove any left-over spaces.
             cmd = Utils.trim(cmd);
+            cmd = cmd.toLowerCase();
+
             // 4.2 Record it in the return value.
             retVal.command = cmd;
 
@@ -244,7 +246,8 @@ module TSOS {
         }
 
         public shellStatus(args: string[]) {
-            var str = args.toString();
+            //var str = args.toString();
+            var str=args.join(" ");
             document.getElementById("status").innerHTML=str;
         }
 
