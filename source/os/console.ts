@@ -116,6 +116,24 @@ module TSOS {
             }
         }
 
+        //Line Wrap Implementation
+        //At first I thought I could get away without having to go through 1 character at a time
+        //But I was wrong. It would always write the word that went over the line, and then do a space
+        //Thereby making a double space instead of a line wrap.
+        //Even tried making the check smaller by subtracting absurd space from canvas width, only make the
+        //double space turn into triple
+        putChar(char) {
+            //putchar will write one character at a time, and if the character ever hits right before the
+            //canvas border, it will create a new line and continue the string that was split.
+            _DrawingContext.drawText(this.currentFont, this.currentFontSize, this.currentXPosition, this.currentYPosition, char);
+            var offset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, char);
+            this.currentXPosition = this.currentXPosition + offset;
+            //its canvas width - 10 because if it was just canvas width it can still cut off the letters
+            if (this.currentXPosition > _Canvas.width - 10) {
+                this.advanceLine();
+            }}
+
+
         public putText(text): void {
             /*  My first inclination here was to write two functions: putChar() and putString().
                 Then I remembered that JavaScript is (sadly) untyped and it won't differentiate
@@ -124,12 +142,10 @@ module TSOS {
                 do the same thing, thereby encouraging confusion and decreasing readability, I
                 decided to write one function and use the term "text" to connote string or char.
             */
-            if (text !== "") {
-                // Draw the text at the current X and Y coordinates.
-                _DrawingContext.drawText(this.currentFont, this.currentFontSize, this.currentXPosition, this.currentYPosition, text);
-                // Move the current X position.
-                var offset = _DrawingContext.measureText(this.currentFont, this.currentFontSize, text);
-                this.currentXPosition = this.currentXPosition + offset;
+                if (text !== "") {
+                for (let i = 0; i < text.length; i++) {
+                    this.putChar(text[i]);
+                }
             }
          }
 
@@ -175,6 +191,8 @@ module TSOS {
 
         }
 
+
+
         public advanceLine(): void {
             this.currentXPosition = 0;
             /*
@@ -196,8 +214,9 @@ module TSOS {
                 //Set ourselves back on the last line of the canvas
                 this.currentYPosition = 495;
             }
+            }
         };
 
-        }
+
     }
 

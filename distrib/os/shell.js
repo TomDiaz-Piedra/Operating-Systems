@@ -132,13 +132,14 @@ var TSOS;
             // 1. Remove leading and trailing spaces.
             buffer = TSOS.Utils.trim(buffer);
             // 2. Lower-case it.
-            buffer = buffer.toLowerCase();
+            //buffer = buffer.toLowerCase();
             // 3. Separate on spaces so we can determine the command and command-line args, if any.
             var tempList = buffer.split(" ");
             // 4. Take the first (zeroth) element and use that as the command.
             var cmd = tempList.shift(); // Yes, you can do that to an array in JavaScript. See the Queue class.
             // 4.1 Remove any left-over spaces.
             cmd = TSOS.Utils.trim(cmd);
+            cmd = cmd.toLowerCase();
             // 4.2 Record it in the return value.
             retVal.command = cmd;
             // 5. Now create the args array from what's left.
@@ -188,7 +189,8 @@ var TSOS;
             _StdOut.putText(APP_NAME + " version " + APP_VERSION);
         }
         shellStatus(args) {
-            var str = args.toString();
+            //var str = args.toString();
+            var str = args.join(" ");
             document.getElementById("status").innerHTML = str;
         }
         shellDate(args) {
@@ -273,6 +275,15 @@ var TSOS;
                         break;
                     case "man":
                         _StdOut.putText("Man gives more information on command given, if it exists.");
+                        break;
+                    case "load":
+                        _StdOut.putText("Load, will load User Program, Only hex-code is valid.");
+                        break;
+                    case "status":
+                        _StdOut.putText("Status changed the user's status message.");
+                        break;
+                    case "bsod":
+                        _StdOut.putText("Bsod will crash the Operating System and display an error message");
                         break;
                     // TODO: Make descriptive MANual page entries for the the rest of the shell commands here.
                     default:
