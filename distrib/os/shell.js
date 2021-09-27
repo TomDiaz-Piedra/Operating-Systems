@@ -202,16 +202,21 @@ var TSOS;
         }
         shellLoad(args) {
             var load;
+            var val;
             load = document.getElementById("taProgramInput");
-            var ans = load.value.trim();
-            ans.replace(/\s/g, "");
-            var re = /[0-9A-Fa-f]{1}/g;
-            if (re.test(ans)) {
+            val = load.value;
+            val = val.toString();
+            val = val.split(" ").join("");
+            // /[0-9A-Fa-f]{6}/g
+            /^[0-9a-fA-F]+$/;
+            const re = /^[0-9a-fA-F]+$/;
+            if (re.test(val)) {
                 _StdOut.putText("Valid");
             }
             else {
                 _StdOut.putText("InValid");
             }
+            re.lastIndex = 0;
         }
         shellCube(args) {
             let cube = document.getElementById('cube');
