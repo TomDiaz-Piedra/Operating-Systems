@@ -207,8 +207,6 @@ var TSOS;
             val = load.value;
             val = val.toString();
             val = val.split(" ").join("");
-            // /[0-9A-Fa-f]{6}/g
-            /^[0-9a-fA-F]+$/;
             const re = /^[0-9a-fA-F]+$/;
             if (re.test(val)) {
                 _StdOut.putText("Valid");
