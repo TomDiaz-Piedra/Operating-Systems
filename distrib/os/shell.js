@@ -27,6 +27,9 @@ var TSOS;
             //load
             sc = new TSOS.ShellCommand(this.shellLoad, "load", "- Loads user input.");
             this.commandList[this.commandList.length] = sc;
+            //run
+            sc = new TSOS.ShellCommand(this.shellRun, "run", "- runs user program.");
+            this.commandList[this.commandList.length] = sc;
             //status
             sc = new TSOS.ShellCommand(this.shellStatus, "status", "- Changes status message to user input");
             this.commandList[this.commandList.length] = sc;
@@ -203,6 +206,7 @@ var TSOS;
         shellLoad(args) {
             var load;
             var val;
+            var valid;
             load = document.getElementById("taProgramInput");
             val = load.value;
             val = val.toString();
@@ -210,11 +214,28 @@ var TSOS;
             const re = /^[0-9a-fA-F]+$/;
             if (re.test(val)) {
                 _StdOut.putText("Valid");
+                valid = true;
             }
             else {
                 _StdOut.putText("InValid");
+                valid = false;
             }
             re.lastIndex = 0;
+            if (valid = true) {
+                if (_MemoryManager.checkValid(val.length)) {
+                    _MemoryManager.isAvailable = false;
+                    var adr = 0;
+                    while (val.length > 0) {
+                        let byte = val.splice(0, 2);
+                        _MemoryAccessor.setMAR(adr);
+                        _MemoryAccessor.setMDR(byte);
+                        _MemoryAccessor.write();
+                        adr++;
+                    }
+                }
+            }
+        }
+        shellRun(args) {
         }
         shellCube(args) {
             let cube = document.getElementById('cube');

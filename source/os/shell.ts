@@ -37,6 +37,12 @@ module TSOS {
                 "- Loads user input.");
             this.commandList[this.commandList.length] = sc;
 
+            //run
+            sc = new ShellCommand(this.shellRun,
+                "run",
+                "- runs user program.");
+            this.commandList[this.commandList.length] = sc;
+
             //status
             sc = new ShellCommand(this.shellStatus,
                 "status",
@@ -263,6 +269,7 @@ module TSOS {
         public shellLoad(args) {
             var load: any;
             var val: any;
+            var valid:boolean;
             load = document.getElementById("taProgramInput");
 
             val = load.value;
@@ -272,13 +279,34 @@ module TSOS {
             const re = /^[0-9a-fA-F]+$/;
             if(re.test(val)) {
                 _StdOut.putText("Valid");
+                valid=true;
             } else {
                 _StdOut.putText("InValid");
+                valid=false;
             }
             re.lastIndex=0;
+            if(valid=true) {
+                if (_MemoryManager.checkValid(val.length)) {
+                    _MemoryManager.isAvailable=false;
+                    var adr=0;
+                    while (val.length > 0) {
+                        let byte = val.splice(0, 2);
+                        _MemoryAccessor.setMAR(adr);
+                        _MemoryAccessor.setMDR(byte);
+                        _MemoryAccessor.write();
+                        adr++;
+                    }
+
+                }
+
+
+            }
+        }
+        public shellRun(args:String){
 
 
         }
+
 
 
         public shellCube(args: string[]) {

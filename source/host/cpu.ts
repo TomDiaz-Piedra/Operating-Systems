@@ -354,11 +354,58 @@ module TSOS {
             return num;
         }
 
+        public writeBack(){
+            if(this.IR==0xEE){
+                let a1=this.hexValue(_MemoryAccessor.getHOB(), 2);
+                let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
+                let adr=a2.concat(a1);
+                _MemoryAccessor.setMAR(parseInt(adr,16)-1);
+                _MemoryAccessor.setMDR(this.Acc);
+                _MemoryAccessor.write();
+                //this.mmu.mem.memory[parseInt(adr,16)-1]=this.acc;
+                this.PC++;
+                //this.step=7;
+            }
+
+        }
+
 
 
         public cycle(): void {
             _Kernel.krnTrace('CPU cycle');
             // TODO: Accumulate CPU usage and profiling statistics here.
+
+
+            //Fetch
+            if(this.step==1){
+                this.fetch();
+
+            }
+            //Decode1
+            else if(this.step==2){
+                this.decode1();
+
+            }
+            //Decode2
+            else if(this.step==3){
+                this.decode2();
+
+            }
+            //Execute1
+            else if(this.step==4){
+                this.execute1();
+
+            }
+            //Execute2
+            else if(this.step==5){
+                this.execute2();
+
+            }
+            //WriteBack
+            else if(this.step==6){
+                this.writeBack();
+
+            }
             // Do the real work here. Be sure to set this.isExecuting appropriately.
         }
     }
