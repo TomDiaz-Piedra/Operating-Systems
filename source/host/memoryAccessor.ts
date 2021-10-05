@@ -43,14 +43,14 @@ module TSOS{
             //Sets a temp variable equal to the current MAR
             let temp:number = this.getMAR();
             //Sets the current MDR equal to the Memory at the location in the MAR
-            this.setMDR(_Memory[temp]);
+            this.setMDR(_Memory.mem[temp]);
         }
 
 //Writes the MDR into the memory position designated by the MAR
         write(){
             let tempMAR=this.getMAR();
             let tempMDR=this.getMDR();
-            _Memory[tempMAR]=tempMDR;
+            _Memory.mem[tempMAR]=tempMDR;
         }
 
 

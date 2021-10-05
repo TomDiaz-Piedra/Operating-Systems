@@ -4,7 +4,7 @@ var TSOS;
         constructor() {
         }
         checkValid(programLength) {
-            if (programLength > SEGMENT_LENGTH) {
+            if (programLength < SEGMENT_LENGTH) {
                 this.isAvailable = true;
                 return this.isAvailable;
             }

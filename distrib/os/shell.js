@@ -214,26 +214,28 @@ var TSOS;
             const re = /^[0-9a-fA-F]+$/;
             if (re.test(val)) {
                 _StdOut.putText("Valid");
-                valid = true;
+                //_MemoryManager.isAvailable=false;
+                let adr = 0;
+                let test = val.length;
+                let start = 0;
+                let end = 2;
+                while (start < test) {
+                    //let byte = val.slice(0, 2);
+                    let byte = val.substring(start, end);
+                    _MemoryAccessor.setMAR(adr);
+                    _MemoryAccessor.setMDR(parseInt(byte, 16));
+                    _MemoryAccessor.write();
+                    //_StdOut.putText(_Memory.mem[adr].toString());
+                    start = start + 2;
+                    end = end + 2;
+                    adr++;
+                }
             }
             else {
                 _StdOut.putText("InValid");
                 valid = false;
             }
             re.lastIndex = 0;
-            if (valid = true) {
-                if (_MemoryManager.checkValid(val.length)) {
-                    _MemoryManager.isAvailable = false;
-                    var adr = 0;
-                    while (val.length > 0) {
-                        let byte = val.splice(0, 2);
-                        _MemoryAccessor.setMAR(adr);
-                        _MemoryAccessor.setMDR(byte);
-                        _MemoryAccessor.write();
-                        adr++;
-                    }
-                }
-            }
         }
         shellRun(args) {
         }

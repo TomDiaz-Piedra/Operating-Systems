@@ -24,7 +24,7 @@ var _CPU; // Utilize TypeScript's type annotation system to ensure that _CPU is 
 var _Memory;
 var _MemoryAccessor;
 var _MemoryManager;
-var _ProcessControlBlock = TSOS.processControlBlock;
+var _ProcessControlBlock;
 var _NextAvailablePID = null;
 var SEGMENT_LENGTH = 256;
 var SEG_NUM = 3;

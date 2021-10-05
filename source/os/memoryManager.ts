@@ -6,8 +6,8 @@ module TSOS{
 
         }
 
-        public checkValid(programLength){
-            if(programLength>SEGMENT_LENGTH){
+        public checkValid(programLength:number){
+            if(programLength<SEGMENT_LENGTH){
                 this.isAvailable=true;
                 return this.isAvailable
             }
