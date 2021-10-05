@@ -43,7 +43,7 @@
 
 <body onload="onDocumentLoad()">
 
-<div id="divMain" style="width:100%;">
+<div id="divMain" style="width:100%;display:grid">
 
    <div id="divButtonBar" style="margin:4px;">
       <input type="button"
@@ -72,7 +72,7 @@
              tabindex="2"
              onclick="TSOS.Control.hostBtnReset_click(this);">
    </div>
-
+<div class="left">
    <div id="divConsole" style="margin:4px; width:500px; height:500px; float:left;">
       <canvas id="display"
               width="500px"
@@ -80,8 +80,10 @@
               tabindex="3">
       </canvas>
    </div>
+</div>
+   <div class ="right">
 
-   <div id="divLog" style="margin-left:1000px;">
+   <div id="divLog">
       <label>
          <label style="color:deepskyblue;">Host Log</label><br>
          <label>Date: </label><b id ="date"></b><br>
@@ -96,8 +98,34 @@
          ></textarea>
       </label>
    </div>
+   <div id ="cpuDisplay">
+      <label>
+         CPU Display
+         <br>
+         <table id="cpuTable">
+            <thead>
+            <tr>
+               <th>PC</th>
+               <th>ACC</th>
+               <th>X Reg</th>
+               <th>Y Reg</th>
+               <th>Z Flag</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+               <td>0</td>
+               <td>0</td>
+               <td>0</td>
+               <td>0</td>
+               <td>0</td>
+            </tr>
+            </tbody>
+         </table>
+      </label>
+   </div>
 
-   <div id="divUserProgramInput" style="margin-left:1000px;">
+   <div id="divUserProgramInput" >
       <label>
          <label style="color:darkorange;">User Program Input</label>
 
@@ -109,6 +137,22 @@
          ></textarea>
       </label>
    </div>
+      <div id="divMemory">
+         <label class="center-align">
+            <div class="label-header">Memory</div>
+            <table name    ="tableMemory"
+                   id      ="tableMemory"
+                   bgcolor ="white"
+                   style   ="color: black; height: 150px; overflow-y: scroll; display: block;"
+                   class   ="table striped">
+            </table>
+            <tbody align="center">
+
+            </tbody>
+         </label>
+      </div>
+   </div>
+
 </div>
 
 <p class="footerText" style="clear:both;">

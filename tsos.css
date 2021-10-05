@@ -69,3 +69,42 @@ h3 {
   font-size: 8pt;
   text-align: center;
 }
+
+#memoryTable {
+  width: 360px;
+  overflow-y:auto;
+  height:180px;
+}
+#cpuTable {
+  width: 360px;
+  height: auto;
+
+}
+#cpuDisplay {
+  background-color: aliceblue;
+  grid-column: 2;
+  grid-row: 1;
+}
+#divLog{
+  grid-column: 1;
+  grid-row: 1;
+}
+#divUserProgramInput{
+  grid-column: 1;
+  grid-row: 2;
+}
+#divMemory{
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.left{
+  grid-column: 1;
+}
+.right {
+  grid-column: 2;
+  display: grid;
+  grid-gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+

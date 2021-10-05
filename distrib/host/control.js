@@ -43,6 +43,30 @@ var TSOS;
                 _GLaDOS.init();
             }
         }
+        //memInt will initialize the display memory.
+        // We call this method only once; which is when the Start button is pressed
+        static memInit() {
+            var table = document.getElementById('tableMemory');
+            // 8 rows
+            for (var i = 0; i < _Memory.mem.length / 8; i++) {
+                var row = table.insertRow(i);
+                var memoryAddrCell = row.insertCell(0);
+                var address = i * 8;
+                // Formats to proper hex
+                var displayAddress = "0x";
+                for (var k = 0; k < 3 - address.toString(16).length; k++) {
+                    displayAddress += "0";
+                }
+                displayAddress += address.toString(16).toUpperCase();
+                memoryAddrCell.innerHTML = displayAddress;
+                // Fill all the cells with 00s
+                for (var j = 1; j < 9; j++) {
+                    var cell = row.insertCell(j);
+                    cell.innerHTML = "00";
+                    cell.classList.add("memoryCell");
+                }
+            }
+        }
         static hostLog(msg, source = "?") {
             // Note the OS CLOCK.
             var clock = _OSclock;
@@ -82,6 +106,7 @@ var TSOS;
             _CPU.init(); //       There's more to do, like dealing with scheduling and such, but this would be a start. Pretty cool.
             _Memory = new TSOS.Memory();
             _Memory.init();
+            Control.memInit();
             _MemoryAccessor = new TSOS.MemoryAccessor();
             // ... then set the host clock pulse ...
             _hardwareClockID = setInterval(TSOS.Devices.hostClockPulse, CPU_CLOCK_INTERVAL);
@@ -104,6 +129,25 @@ var TSOS;
             // That boolean parameter is the 'forceget' flag. When it is true it causes the page to always
             // be reloaded from the server. If it is false or not specified the browser may reload the
             // page from its cache, which is not what we want.
+        }
+        //Updates the memory display we initialize at start
+        static UpdateMemDisplay() {
+            var table = document.getElementById('tableMemory');
+            var data = 0;
+            for (var i = 0; i < table.rows.length; i++) {
+                for (var j = 1; j < 9; j++) {
+                    table.rows[i].cells.item(j).innerHTML = _Memory.mem[data].toString(16).toUpperCase();
+                    table.rows[i].cells.item(j).style.color = "black";
+                    table.rows[i].cells.item(j).style['font-weight'] = "normal";
+                    //Formatting memory, works for now. If some value makes the display look bad I will need to fix this
+                    //NOTE: IF MEMORY FORMAT LOOKS BAD FIX THIS TOM!!!!!!!
+                    var dec = parseInt(_Memory.mem[data].toString(), 16);
+                    if (dec < 16 && dec > 0) {
+                        table.rows[i].cells.item(j).innerHTML = "0" + dec.toString(16).toUpperCase();
+                    }
+                    data++;
+                }
+            }
         }
     }
     TSOS.Control = Control;
