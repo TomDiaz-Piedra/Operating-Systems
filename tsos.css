@@ -71,40 +71,61 @@ h3 {
 }
 
 #memoryTable {
-  width: 360px;
+  width: 220px;
   overflow-y:auto;
   height:180px;
 }
 #cpuTable {
-  width: 360px;
-  height: auto;
+  width:360px;
+
 
 }
 #cpuDisplay {
-  background-color: aliceblue;
-  grid-column: 2;
-  grid-row: 1;
+
+}
+#pcbDisplay{
+
 }
 #divLog{
-  grid-column: 1;
-  grid-row: 1;
+
+}
+table, th, td {
+  border: 1px solid white;
+  border-collapse: collapse;
+}
+th, td {
+  background-color: #96D4D4;
 }
 #divUserProgramInput{
-  grid-column: 1;
-  grid-row: 2;
+
 }
 #divMemory{
-  grid-column: 2;
-  grid-row: 2;
-}
 
+}
 .left{
   grid-column: 1;
 }
-.right {
+.right{
   grid-column: 2;
-  display: grid;
-  grid-gap: 10px;
-  grid-template-columns: 1fr 1fr;
 }
 
+.outer-grid {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 5px;
+  grid-auto-flow: column;
+}
+.outer-grid > div {
+  color: white;
+  padding: 5px;
+}
+.inner-grid {
+  display: grid;
+  grid-template-columns: min-content min-content;}
+.inner-grid > div {
+  background: deepskyblue;
+  padding: 5px;
+  grid-auto-rows: 10px; /* new */
+
+}

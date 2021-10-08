@@ -211,21 +211,25 @@ var TSOS;
             val = load.value;
             val = val.toString();
             val = val.split(" ").join("");
+            let isEven = val.length % 2 == 0;
             const re = /^[0-9a-fA-F]+$/;
-            if (re.test(val)) {
+            let programLength = val.length;
+            _MemoryManager.checkValid(programLength);
+            if (_MemoryManager.memSegments[0].isEmpty == false) {
+                _StdOut.putText("No Space Left in Memory!");
+            }
+            if (re.test(val) && isEven) {
                 _StdOut.putText("Valid");
-                //_MemoryManager.isAvailable=false;
-                let adr = 0;
+                _MemoryManager.memSegments[0].isEmpty = false;
+                let adr = _MemoryManager.memSegments[0].Start;
                 let test = val.length;
                 let start = 0;
                 let end = 2;
                 while (start < test) {
-                    //let byte = val.slice(0, 2);
                     let byte = val.substring(start, end);
                     _MemoryAccessor.setMAR(adr);
                     _MemoryAccessor.setMDR(parseInt(byte, 16));
                     _MemoryAccessor.write();
-                    //_StdOut.putText(_Memory.mem[adr].toString());
                     start = start + 2;
                     end = end + 2;
                     adr++;
@@ -233,7 +237,6 @@ var TSOS;
             }
             else {
                 _StdOut.putText("InValid");
-                valid = false;
             }
             re.lastIndex = 0;
         }

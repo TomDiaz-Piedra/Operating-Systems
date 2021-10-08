@@ -14,6 +14,7 @@ var TSOS;
         //
         krnBootstrap() {
             TSOS.Control.hostLog("bootstrap", "host"); // Use hostLog because we ALWAYS want this, even if _Trace is off.
+            TSOS.Control.memInit();
             // Initialize our global queues.
             _KernelInterruptQueue = new TSOS.Queue(); // A (currently) non-priority queue for interrupt requests (IRQs).
             _KernelBuffers = new Array(); // Buffers... for the kernel.

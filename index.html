@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html lang="en">
+<html lang="en" xmlns:style="http://www.w3.org/1999/xhtml">
 <head>
    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
    <meta name="author"             content="Alan G. Labouseur" />
@@ -71,7 +71,9 @@
              value="Reset"
              tabindex="2"
              onclick="TSOS.Control.hostBtnReset_click(this);">
+
    </div>
+   <div class="outer-grid">
 <div class="left">
    <div id="divConsole" style="margin:4px; width:500px; height:500px; float:left;">
       <canvas id="display"
@@ -81,25 +83,26 @@
       </canvas>
    </div>
 </div>
+
    <div class ="right">
+   <div class="inner-grid">
 
    <div id="divLog">
       <label>
-         <label style="color:deepskyblue;">Host Log</label><br>
+         <label style="color:darkorange;">Host Log</label><br>
          <label>Date: </label><b id ="date"></b><br>
          <label>Time: </label><b id="time"></b><br>
          <label>Status: </label><b id="status"></b>
-
          <br>
          <textarea name="taHostLog"
                    id  ="taHostLog"
-                   rows="26"
+                   rows="8"
                    cols="48"
          ></textarea>
       </label>
    </div>
    <div id ="cpuDisplay">
-      <label>
+      <label style=" color:darkorange">
          CPU Display
          <br>
          <table id="cpuTable">
@@ -125,7 +128,7 @@
       </label>
    </div>
 
-   <div id="divUserProgramInput" >
+   <div id="divUserProgramInput">
       <label>
          <label style="color:darkorange;">User Program Input</label>
 
@@ -139,7 +142,7 @@
    </div>
       <div id="divMemory">
          <label class="center-align">
-            <div class="label-header">Memory</div>
+            <div class="label-header" style = "color: darkorange">Memory</div>
             <table name    ="tableMemory"
                    id      ="tableMemory"
                    bgcolor ="white"
@@ -151,6 +154,25 @@
             </tbody>
          </label>
       </div>
+      <div id="pcbDisplay">
+         <table>
+            <th>PCB</th>
+            <tr>
+               <tbody>
+               <td>PID</td>
+               <td>State</td>
+               <td>PC</td>
+               <td>IR</td>
+               <td>Acc</td>
+               <td>X Reg</td>
+               <td>Y Reg</td>
+               <td>Z Flag</td>
+               </tbody>
+            </tr>
+         </table>
+      </div>
+   </div>
+   </div>
    </div>
 
 </div>

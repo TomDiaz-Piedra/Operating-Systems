@@ -41,6 +41,19 @@ var TSOS;
             let tempMDR = this.getMDR();
             _Memory.mem[tempMAR] = tempMDR;
         }
+        //Clears the newly Available Memory Segment, and then calls the MMU to update its status
+        clearSegment(segment) {
+            let memSeg = _MemoryManager.memSegments[segment].Start;
+            //Clears the memory segment by rewriting each slot to 0x00, then updates memory display for GUI.
+            for (let i = memSeg; i < memSeg + SEGMENT_LENGTH; i++) {
+                this.setMAR(i);
+                this.setMDR(0x00);
+                this.write();
+                TSOS.Control.UpdateMemDisplay();
+            }
+            //Once the old program has been wiped, the Memory Manager can make the Segment Available Again!
+            _MemoryManager.UpdateValid(segment);
+        }
     }
     TSOS.MemoryAccessor = MemoryAccessor;
 })(TSOS || (TSOS = {}));
