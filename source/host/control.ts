@@ -77,10 +77,18 @@ module TSOS {
             }
         }
 
-        public addPcb(){
-
+        public static addPcb(){
+            var pcbTable = document.getElementById("pcbTable") as HTMLTableElement;
+            var r = 3;
+            let pcbRow =pcbTable.insertRow(r);
+            r++;
+            for(var i =0;i<8;i++){
+                let cell = pcbRow.insertCell(i);
+                cell.innerHTML="0";
+                cell.classList.add("pcb"+i.toString());
+            }
         }
-        public pcbInit(){
+        public updatePCB(){
 
         }
 
@@ -196,7 +204,7 @@ module TSOS {
         }
         public static UpdateCpuDisplay(){
             document.getElementById("cpuPC").innerHTML=String(_CPU.currentProgram.pc);
-            let acc = _CPU.currentProgram.acc.toString(16);
+            let acc = _CPU.currentProgram.acc.toString(16).toUpperCase();
             document.getElementById("cpuACC").innerHTML=acc;
             document.getElementById("cpuXREG").innerHTML=String(_CPU.currentProgram.xReg);
             document.getElementById("cpuYREG").innerHTML=String(_CPU.currentProgram.yReg);

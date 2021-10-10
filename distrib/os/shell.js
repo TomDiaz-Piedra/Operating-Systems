@@ -235,11 +235,12 @@ var TSOS;
                     adr++;
                 }
                 TSOS.Control.UpdateMemDisplay();
-                const pcb = new TSOS.processControlBlock();
+                let pcb = new TSOS.processControlBlock();
                 pcb.pc = _MemoryManager.memSegments[0].Start;
                 pcb.state = "ready";
                 pcb.segment = _MemoryManager.memSegments[0];
                 readyqueue.push(pcb);
+                TSOS.Control.addPcb();
                 //_StdOut.putText("Valid: PID = "+pcb.pid);
                 _StdOut.putText("Valid: PID = " + pcb.pid);
                 _NextAvailablePID++;
@@ -275,6 +276,7 @@ var TSOS;
         shellShutdown(args) {
             _StdOut.putText("Shutting down...");
             // Call Kernel shutdown routine.
+            _CPU.isExecuting = false;
             _Kernel.krnShutdown();
             // TODO: Stop the final prompt from being displayed. If possible. Not a high priority. (Damn OCD!)
         }
