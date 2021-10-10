@@ -83,11 +83,14 @@ module TSOS {
                 var interrupt = _KernelInterruptQueue.dequeue();
                 this.krnInterruptHandler(interrupt.irq, interrupt.params);
             } else if (_CPU.isExecuting) { // If there are no interrupts then run one CPU cycle if there is anything being processed.
+               TSOS.Control.UpdateCpuDisplay();
                 _CPU.cycle();
-                TSOS.Control.UpdateMemDisplay();
+                //TSOS.Control.UpdateMemDisplay();
+                //TSOS.Control.UpdateCpuDisplay();
+
             } else {                       // If there are no interrupts and there is nothing being executed then just be idle.
                 this.krnTrace("Idle");
-                TSOS.Control.UpdateMemDisplay();
+                //TSOS.Control.UpdateMemDisplay();
             }
         }
 

@@ -3,9 +3,9 @@
 module TSOS{
 
 export class Memory{
-
-    constructor(public mem = new Array(256)){
-        this.mem=mem;
+    public mem = [];
+    constructor(){
+        this.mem=this.mem;
     }
 
     public init(){

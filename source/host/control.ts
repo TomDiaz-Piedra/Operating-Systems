@@ -56,6 +56,7 @@ module TSOS {
         public static memInit(){
             var table = document.getElementById('tableMemory') as HTMLTableElement;
             // 8 rows
+            //_Memory.mem.length / 8
             for (var i = 0; i < _Memory.mem.length / 8; i++) {
                 var row = table.insertRow(i);
                 var memoryAddrCell = row.insertCell(0);
@@ -74,6 +75,13 @@ module TSOS {
                     cell.classList.add("memoryCell");
                 }
             }
+        }
+
+        public addPcb(){
+
+        }
+        public pcbInit(){
+
         }
 
         public static hostLog(msg: string, source: string = "?"): void {
@@ -128,13 +136,14 @@ module TSOS {
 
 
             // ... Create and initialize the CPU (because it's part of the hardware)  ...
-            _CPU = new Cpu(0, 0, 0, 0);  // Note: We could simulate multi-core systems by instantiating more than one instance of the CPU here.
+            _CPU = new Cpu(0, 0, 1, "0", 0, 0,0,0,false,);  // Note: We could simulate multi-core systems by instantiating more than one instance of the CPU here.
             _CPU.init();       //       There's more to do, like dealing with scheduling and such, but this would be a start. Pretty cool.
             _Memory = new Memory();
             _Memory.init();
             //Control.memInit();
             _MemoryAccessor = new MemoryAccessor();
             _MemoryManager = new MemoryManager();
+            _ProcessControlBlock = new processControlBlock();
 
             // ... then set the host clock pulse ...
             _hardwareClockID = setInterval(Devices.hostClockPulse, CPU_CLOCK_INTERVAL);
@@ -168,18 +177,33 @@ module TSOS {
             var data = 0;
             for (var i = 0; i < table.rows.length; i++) {
                 for (var j = 1; j < 9; j++) {
-                    table.rows[i].cells.item(j).innerHTML = _Memory.mem[data].toString(16).toUpperCase();
+                    let d = parseInt(String(_Memory.mem[data]));
+                    table.rows[i].cells.item(j).innerHTML = d.toString(16).toUpperCase();
                     table.rows[i].cells.item(j).style.color = "black";
                     table.rows[i].cells.item(j).style['font-weight'] = "normal";
                     //Formatting memory, works for now. If some value makes the display look bad I will need to fix this
                     //NOTE: IF MEMORY FORMAT LOOKS BAD FIX THIS TOM!!!!!!!
-                    var dec = parseInt(_Memory.mem[data].toString(), 16);
-                    if (dec < 16 && dec > 0) {
+                    var dec = parseInt(_Memory.mem[data]);
+                    //.toString(), 16)
+                    //var dec = String(parseInt(String(_Memory.mem[data],16);
+                    if (dec < 16 && dec >= 0) {
                         table.rows[i].cells.item(j).innerHTML = "0" + dec.toString(16).toUpperCase();
                     }
                     data++;
                 }
             }
+
+        }
+        public static UpdateCpuDisplay(){
+            document.getElementById("cpuPC").innerHTML=String(_CPU.currentProgram.pc);
+            let acc = _CPU.currentProgram.acc.toString(16);
+            document.getElementById("cpuACC").innerHTML=acc;
+            document.getElementById("cpuXREG").innerHTML=String(_CPU.currentProgram.xReg);
+            document.getElementById("cpuYREG").innerHTML=String(_CPU.currentProgram.yReg);
+            document.getElementById("cpuZFlag").innerHTML=String(_CPU.currentProgram.zReg);
+
+        }
+        public updatePCBDisplay(){
 
         }
 

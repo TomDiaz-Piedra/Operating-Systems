@@ -12,6 +12,16 @@ var TSOS;
             this.state = "resident";
             this.priority = 0;
             this.pid = _NextAvailablePID;
+            this.segment = this.segment;
+        }
+        getPCB(pid) {
+            let ans;
+            for (let i = 0; i < readyqueue.length; i++) {
+                if (readyqueue[i].pid == pid) {
+                    ans = readyqueue[i];
+                }
+            }
+            return ans;
         }
     }
     TSOS.processControlBlock = processControlBlock;

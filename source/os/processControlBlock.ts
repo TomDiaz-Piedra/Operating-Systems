@@ -11,6 +11,7 @@ module TSOS{
         public state:string;
         public priority;
         public pid;
+        public segment;
 
 
 
@@ -25,8 +26,19 @@ module TSOS{
             this.state="resident";
             this.priority=0;
             this.pid=_NextAvailablePID;
+            this.segment=this.segment;
 
 
+        }
+
+        getPCB(pid:number){
+            let ans;
+            for(let i=0;i<readyqueue.length;i++){
+                if(readyqueue[i].pid==pid){
+                    ans = readyqueue[i];
+                }
+            }
+            return ans;
         }
 
 

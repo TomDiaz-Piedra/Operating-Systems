@@ -30,7 +30,8 @@ var _Memory:TSOS.Memory;
 var _MemoryAccessor:TSOS.MemoryAccessor;
 var _MemoryManager: TSOS.MemoryManager;
 var _ProcessControlBlock: TSOS.processControlBlock;
-var _NextAvailablePID = null;
+var _NextAvailablePID = 0;
+var readyqueue = [];
 var SEGMENT_LENGTH = 256;
 var SEG_NUM = 3;
 var _OSclock: number = 0;  // Page 23.

@@ -13,12 +13,13 @@
 var TSOS;
 (function (TSOS) {
     class Cpu {
-        constructor(PC = 0, Acc = 0, step, IR, xReg = 0, yReg = 0, zFlag = 0, isExecuting = false) {
+        constructor(PC = 0, Acc = 0, step = 1, IR, xReg = 0, currentProgram, yReg = 0, zFlag = 0, isExecuting = false) {
             this.PC = PC;
             this.Acc = Acc;
             this.step = step;
             this.IR = IR;
             this.xReg = xReg;
+            this.currentProgram = currentProgram;
             this.yReg = yReg;
             this.zFlag = zFlag;
             this.isExecuting = isExecuting;
@@ -32,6 +33,11 @@ var TSOS;
             this.yReg = 0;
             this.zFlag = 0;
             this.isExecuting = false;
+        }
+        startCPU(pcb) {
+            this.currentProgram = pcb;
+            this.PC = this.currentProgram.pc;
+            this.isExecuting = true;
         }
         //Getters and Setters for the X and Y registers
         setXreg(xReg) {
@@ -51,18 +57,23 @@ var TSOS;
             //this.op=this.mmu.mem.memory[this.pc];
             _MemoryAccessor.setMAR(this.PC);
             _MemoryAccessor.read();
-            this.IR = _MemoryAccessor.getMDR();
+            this.IR = _MemoryAccessor.getMDR().toString(16).toUpperCase();
+            if (this.IR == "0") {
+                this.IR = this.IR + "0";
+            }
             //increment program counter
             this.PC++;
+            this.currentProgram.pc++;
             this.step = 2;
         }
         decode1() {
-            if (this.IR == 0xAD || this.IR == 0x8D || this.IR == 0x6D || this.IR == 0xAE || this.IR == 0xAC || this.IR == 0xEC || this.IR == 0xEE) {
+            if (this.IR == "AD" || this.IR == "8D" || this.IR == "6D" || this.IR == "AE" || this.IR == "AC" || this.IR == "EC" || this.IR == "EE") {
                 //this.mmu.setHOB(this.mmu.mem.memory[this.pc]);
                 _MemoryAccessor.setMAR(this.PC);
                 _MemoryAccessor.read();
                 _MemoryAccessor.setHOB(_MemoryAccessor.getMDR());
                 this.PC++;
+                this.currentProgram.pc++;
                 this.step = 3;
             }
             else {
@@ -78,40 +89,45 @@ var TSOS;
         }
         execute1() {
             //A9 - Load Accumulator with a Constant - 4 CPU Cycles
-            if (this.IR == 0xA9) {
+            if (this.IR == "A9") {
                 //this.acc=this.mmu.mem.memory[this.pc];
                 _MemoryAccessor.setMAR(this.PC);
                 _MemoryAccessor.read();
                 let num = this.checkComp(_MemoryAccessor.getMDR());
                 this.Acc = num;
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.currentProgram.acc = num;
+                this.step = 1;
             }
             //A2 - Load X register with a constant - 4 CPU Cycles
-            if (this.IR == 0xA2) {
+            if (this.IR == "A2") {
                 _MemoryAccessor.setMAR(this.PC);
                 _MemoryAccessor.read();
                 let num = this.checkComp(_MemoryAccessor.getMDR());
                 this.setXreg(num);
                 //this.setXreg(this.mmu.mem.memory[this.pc]);
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
             //A0 - Load Y register with a constant - 4 CPU Cycles
-            if (this.IR == 0xA0) {
+            if (this.IR == "A0") {
                 _MemoryAccessor.setMAR(this.PC);
                 _MemoryAccessor.read();
                 let num = this.checkComp(_MemoryAccessor.getMDR());
                 this.setYreg(num);
                 //this.setYreg(this.mmu.mem.memory[this.pc]);
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
             //D0 - Branch N Bytes
-            if (this.IR == 0xD0) {
+            if (this.IR == "D0") {
                 if (this.zFlag == 1) {
                     this.PC++;
-                    //this.step=7;
+                    this.currentProgram.pc++;
+                    this.step = 1;
                 }
                 if (this.zFlag == 0) {
                     _MemoryAccessor.setMAR(this.PC);
@@ -119,11 +135,12 @@ var TSOS;
                     const hex = _MemoryAccessor.getMDR();
                     let offset = this.checkComp(hex);
                     this.PC = this.PC + offset;
-                    //this.step=7;
+                    this.currentProgram.pc = this.currentProgram.pc + offset;
+                    this.step = 1;
                 }
             }
             //AD - Load Accumulator from Memory - 5 Cycles
-            if (this.IR == 0xAD) {
+            if (this.IR == "AD") {
                 let adr = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
                 let a = parseInt(adr, 16) - 1;
                 _MemoryAccessor.setMAR(a);
@@ -131,10 +148,12 @@ var TSOS;
                 let num = this.checkComp(_MemoryAccessor.getMDR());
                 this.Acc = num;
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.currentProgram.acc = num;
+                this.step = 1;
             }
             //AE - Load X register from Memory - 5 Cycles
-            if (this.IR == 0xAE) {
+            if (this.IR == "AE") {
                 let adr = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
                 _MemoryAccessor.setMAR(parseInt(adr, 16) - 1);
                 _MemoryAccessor.read();
@@ -142,10 +161,11 @@ var TSOS;
                 this.setXreg(num);
                 //this.setXreg(this.mmu.mem.memory[parseInt(adr,16)-1]);
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
             //AC - Load Y register from Memory - 5 Cycles
-            if (this.IR == 0xAC) {
+            if (this.IR == "AC") {
                 let adr = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
                 _MemoryAccessor.setMAR(parseInt(adr, 16) - 1);
                 _MemoryAccessor.read();
@@ -153,22 +173,25 @@ var TSOS;
                 this.setYreg(num);
                 //this.setYreg(this.mmu.mem.memory[parseInt(adr,16)-1]);
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
             //AA - Load X register from Accumulator - 4 Cycles
-            if (this.IR == 0xAA) {
+            if (this.IR == "AA") {
                 this.setXreg(this.Acc);
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
             //A8 - Load Y register from Accumulator - 4 Cycles
-            if (this.IR == 0xA8) {
+            if (this.IR == "A8") {
                 this.setYreg(this.Acc);
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
             //8D - Store the Accumulator in Memory - 5 Cycles
-            if (this.IR == 0x8D) {
+            if (this.IR == "8D") {
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
@@ -177,10 +200,12 @@ var TSOS;
                 _MemoryAccessor.write();
                 //this.mmu.mem.memory[parseInt(adr,16)-1]=this.acc;
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
+                TSOS.Control.UpdateMemDisplay();
             }
             //6D - ADD - 5 Cycles
-            if (this.IR == 0x6D) {
+            if (this.IR == "6D") {
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
@@ -191,10 +216,12 @@ var TSOS;
                 //num=this.mmu.getMDR();
                 this.Acc = this.Acc + num;
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.currentProgram.acc = this.currentProgram.acc + num;
+                this.step = 4;
             }
             //EC - Compares a byte in Memory to X register - 5 Cycles
-            if (this.IR == 0xEC) {
+            if (this.IR == "EC") {
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
@@ -210,24 +237,27 @@ var TSOS;
                     this.zFlag = 0;
                 }
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
             //8A - Load Accumulator from X register - 4 Cycles
-            if (this.IR == 0x8A) {
+            if (this.IR == "8A") {
                 let num = this.checkComp(this.getXreg());
                 this.Acc = num;
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
             //98 - Load Accumulator from Y register - 4 Cycles
-            if (this.IR == 0x98) {
+            if (this.IR == "98") {
                 let num = this.checkComp(this.getYreg());
                 this.Acc = num;
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
             //EE - Increment a Byte in Memory - 7 Cycles
-            if (this.IR == 0xEE) {
+            if (this.IR == "EE") {
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
@@ -235,56 +265,52 @@ var TSOS;
                 _MemoryAccessor.read();
                 let num = this.checkComp(_MemoryAccessor.getMDR());
                 this.Acc = num;
+                this.currentProgram.acc = num;
                 //this.acc=this.mmu.mem.memory[parseInt(adr,16)-1];
                 this.step = 5;
             }
             //00 - Break/Stop System
-            if (this.IR == 0x00) {
-                //this.clock.stop();
+            if (this.IR == "00") {
+                this.PC = this.currentProgram.End;
+                _MemoryAccessor.clearSegment(0);
+                this.isExecuting = false;
             }
             //FF - System Call
-            if (this.IR == 0xFF) {
+            if (this.IR == "FF") {
                 if (this.getXreg() == 1) {
                     let out = this.getYreg();
                     out = this.checkComp(out);
                     _StdOut.putText(out.toString());
                     //console.log(out.toString());
                     //this.pc++;
-                    //this.step=7;
+                    this.step = 1;
                 }
                 if (this.getXreg() == 2) {
-                    _MemoryAccessor.setMAR(this.PC);
-                    _MemoryAccessor.read();
-                    this.PC = _MemoryAccessor.getMDR();
-                    this.IR = _MemoryAccessor.getMDR();
-                    while (this.IR !== 0x00) {
-                        _MemoryAccessor.setMAR(this.PC);
-                        _MemoryAccessor.read();
-                        this.PC = _MemoryAccessor.getMAR();
-                        let str = parseInt(String(_MemoryAccessor.getMDR()), 10);
-                        if (str > 30 && str < 128) {
-                            // @ts-ignore
-                            _StdOut.putText(this.ascii.byteToStr(str));
-                        }
-                        else {
-                            _StdOut.putText(str.toString(16));
-                        }
+                    while (this.IR !== "00") {
+                        let out = this.getYreg();
+                        _StdOut.putText(String.fromCharCode(out - 4));
                         this.PC++;
+                        this.currentProgram.pc++;
+                        this.IR = _Memory.mem[this.PC].toString(16);
                         _MemoryAccessor.setMAR(this.PC);
                         _MemoryAccessor.read();
-                        this.IR = _MemoryAccessor.getMDR();
+                        this.setYreg(_MemoryAccessor.getMDR());
+                        if (this.IR == "0") {
+                            this.IR = this.IR + "0";
+                        }
                     }
-                    //this.step=7;
+                    this.step = 1;
                 }
             }
             //EA - No Operation
-            if (this.IR == 0xEA) {
+            if (this.IR == "EA") {
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
         }
         execute2() {
-            if (this.IR == 0xEE) {
+            if (this.IR == "EE") {
                 this.Acc = this.Acc + 1;
                 this.step = 6;
             }
@@ -312,7 +338,7 @@ var TSOS;
             return num;
         }
         writeBack() {
-            if (this.IR == 0xEE) {
+            if (this.IR == "EE") {
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
@@ -321,7 +347,8 @@ var TSOS;
                 _MemoryAccessor.write();
                 //this.mmu.mem.memory[parseInt(adr,16)-1]=this.acc;
                 this.PC++;
-                //this.step=7;
+                this.currentProgram.pc++;
+                this.step = 1;
             }
         }
         cycle() {
@@ -350,6 +377,10 @@ var TSOS;
             //WriteBack
             else if (this.step == 6) {
                 this.writeBack();
+            }
+            else if (this.PC >= this.currentProgram.End) {
+                this.currentProgram.state = "Terminated";
+                readyqueue.pop();
             }
             // Do the real work here. Be sure to set this.isExecuting appropriately.
         }

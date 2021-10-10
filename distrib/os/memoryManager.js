@@ -2,8 +2,7 @@ var TSOS;
 (function (TSOS) {
     class MemoryManager {
         constructor() {
-            this.readyqueue = [];
-            this.memSegments = [{ "Start": 0, "size": SEGMENT_LENGTH, "isEmpty": true },];
+            this.memSegments = [{ "Start": 0, "size": SEGMENT_LENGTH, "isEmpty": true, "Current": 0, "End": 255 },];
         }
         checkValid(programLength) {
             //If the segment is available it will return the starting point for loading the program, and also set the segments availability to false
@@ -12,7 +11,7 @@ var TSOS;
             }
             //If not available it will return false
             else {
-                return this.memSegments[0];
+                return this.memSegments[0].isEmpty = false;
             }
         }
         UpdateValid(segment) {

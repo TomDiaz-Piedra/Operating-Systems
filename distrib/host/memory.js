@@ -1,9 +1,9 @@
 var TSOS;
 (function (TSOS) {
     class Memory {
-        constructor(mem = new Array(256)) {
-            this.mem = mem;
-            this.mem = mem;
+        constructor() {
+            this.mem = [];
+            this.mem = this.mem;
         }
         init() {
             for (let i = 0; i < 255; i++) {

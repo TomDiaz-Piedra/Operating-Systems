@@ -1,12 +1,9 @@
 module TSOS{
 
     export class MemoryManager{
-        private  readyqueue = [];
-        private  isAvailable: boolean;
-        private  residentqueue: any[];
         memSegments:any [];
         constructor(){
-            this.memSegments = [{ "Start": 0, "size": SEGMENT_LENGTH, "isEmpty": true },]
+            this.memSegments = [{ "Start": 0, "size": SEGMENT_LENGTH, "isEmpty": true, "Current": 0 ,"End": 255},]
         }
 
         public  checkValid(programLength:number){
@@ -16,7 +13,7 @@ module TSOS{
             }
             //If not available it will return false
             else{
-                return this.memSegments[0];
+                return this.memSegments[0].isEmpty=false;
             }
     }
         public UpdateValid(segment:number){
