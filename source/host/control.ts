@@ -77,18 +77,56 @@ module TSOS {
             }
         }
 
-        public static addPcb(){
+        public static addPcb(pcb){
             var pcbTable = document.getElementById("pcbTable") as HTMLTableElement;
             var r = 3;
             let pcbRow =pcbTable.insertRow(r);
+            pcbRow.className=pcb.pid;
             r++;
-            for(var i =0;i<8;i++){
-                let cell = pcbRow.insertCell(i);
-                cell.innerHTML="0";
-                cell.classList.add("pcb"+i.toString());
-            }
+            let pid = pcbRow.insertCell(0);
+            pid.innerHTML=pcb.pid;
+            let state = pcbRow.insertCell(1);
+            state.innerHTML=pcb.state;
+            let pc = pcbRow.insertCell(2);
+            pc.innerHTML=pcb.pc;
+            let ir = pcbRow.insertCell(3);
+            ir.innerHTML=pcb.IR;
+            let acc = pcbRow.insertCell(4);
+            acc.innerHTML=pcb.acc;
+            let xreg = pcbRow.insertCell(5);
+            xreg.innerHTML=pcb.xReg;
+            let yreg = pcbRow.insertCell(6);
+            yreg.innerHTML=pcb.yReg;
+            let zflag = pcbRow.insertCell(7);
+            zflag.innerHTML=pcb.zReg;
+            //cell.innerHTML="0";
+            //cell.classList.add("pcb"+i.toString());
+
         }
-        public updatePCB(){
+        public static updatePCB(pcb){
+            let pcbTable=document.getElementById("pcbTable") as HTMLTableElement;
+            let r;
+            for(let i=0;i<pcbTable.rows.length;i++){
+                if(pcb.pid==pcbTable.rows[i].className){
+                    r=pcbTable.rows[i];
+                }
+            }
+            let pid = r.cells[0];
+            pid.innerHTML=pcb.pid;
+            let state = r.cells[1];
+            state.innerHTML=pcb.state;
+            let pc = r.cells[2];
+            pc.innerHTML=pcb.pc;
+            let ir = r.cells[3];
+            ir.innerHTML=pcb.IR;
+            let acc = r.cells[4];
+            acc.innerHTML=pcb.acc;
+            let xreg = r.cells[5];
+            xreg.innerHTML=pcb.xReg;
+            let yreg = r.cells[6];
+            yreg.innerHTML=pcb.yReg;
+            let zflag = r.cells[7];
+            zflag.innerHTML=pcb.zReg;
 
         }
 

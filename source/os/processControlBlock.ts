@@ -33,9 +33,9 @@ module TSOS{
 
         getPCB(pid:number){
             let ans;
-            for(let i=0;i<readyqueue.length;i++){
-                if(readyqueue[i].pid==pid){
-                    ans = readyqueue[i];
+            for(let i=0;i<residentqueue.length;i++){
+                if(residentqueue[i].pid==pid){
+                    ans = residentqueue[i];
                 }
             }
             return ans;

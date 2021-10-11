@@ -237,10 +237,9 @@ var TSOS;
                 TSOS.Control.UpdateMemDisplay();
                 let pcb = new TSOS.processControlBlock();
                 pcb.pc = _MemoryManager.memSegments[0].Start;
-                pcb.state = "ready";
                 pcb.segment = _MemoryManager.memSegments[0];
-                readyqueue.push(pcb);
-                TSOS.Control.addPcb();
+                residentqueue.push(pcb);
+                TSOS.Control.addPcb(pcb);
                 //_StdOut.putText("Valid: PID = "+pcb.pid);
                 _StdOut.putText("Valid: PID = " + pcb.pid);
                 _NextAvailablePID++;
@@ -254,7 +253,9 @@ var TSOS;
             //_StdOut.putText(_Memory.mem[4].toString());
             //_StdOut.putText(_Memory.mem[5].toString());
             let program = _ProcessControlBlock.getPCB(args);
-            program.state = "running";
+            program.state = "ready";
+            TSOS.Control.updatePCB(program);
+            readyqueue.push(program);
             _CPU.startCPU(program);
         }
         shellCube(args) {

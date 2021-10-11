@@ -42,6 +42,8 @@ module TSOS {
             this.currentProgram=pcb;
             this.PC=this.currentProgram.pc;
             this.step=1;
+            this.currentProgram.state="running";
+
             this.isExecuting=true;
         }
 
@@ -315,6 +317,7 @@ module TSOS {
             //00 - Break/Stop System
             if(this.IR=="00"){
                 _MemoryAccessor.clearSegment(0);
+                this.currentProgram.state="terminated";
 
                 this.updateCurrent();
                 this.isExecuting=false;
@@ -458,6 +461,7 @@ module TSOS {
                 readyqueue.pop();
 
             }
+            TSOS.Control.updatePCB(this.currentProgram);
 
             // Do the real work here. Be sure to set this.isExecuting appropriately.
         }

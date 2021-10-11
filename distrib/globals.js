@@ -27,6 +27,7 @@ var _MemoryManager;
 var _ProcessControlBlock;
 var _NextAvailablePID = 0;
 var readyqueue = [];
+var residentqueue = [];
 var SEGMENT_LENGTH = 256;
 var SEG_NUM = 3;
 var _OSclock = 0; // Page 23.
