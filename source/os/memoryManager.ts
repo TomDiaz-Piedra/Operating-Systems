@@ -8,7 +8,7 @@ module TSOS{
 
         public  checkValid(programLength:number){
             //If the segment is available it will return the starting point for loading the program, and also set the segments availability to false
-            if(programLength<=SEGMENT_LENGTH && this.memSegments[0].isEmpty){
+            if(this.memSegments[0].isEmpty){
                 return this.memSegments[0];
             }
             //If not available it will return false
