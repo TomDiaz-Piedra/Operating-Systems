@@ -33,7 +33,8 @@ var _ProcessControlBlock: TSOS.processControlBlock;
 var _NextAvailablePID = 0;
 var readyqueue = [];
 var residentqueue =[];
-var SEGMENT_LENGTH = 256;
+var SEGMENT_LENGTH = 512;
+var Quantum = 6;
 var SEG_NUM = 3;
 var _OSclock: number = 0;  // Page 23.
 

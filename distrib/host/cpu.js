@@ -374,6 +374,9 @@ var TSOS;
             // TODO: Accumulate CPU usage and profiling statistics here.
             //Fetch
             if (this.step == 1) {
+                //Call the scheduler and check whether or not the quantum has been used up
+                //if so, contact dispatcher to start a context switch
+                //go forth with fetch after switch(if switched)
                 this.fetch();
             }
             //Decode1

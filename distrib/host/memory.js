@@ -6,7 +6,7 @@ var TSOS;
             this.mem = this.mem;
         }
         init() {
-            for (let i = 0; i < 255; i++) {
+            for (let i = 0; i < 767; i++) {
                 this.mem.push(0x00);
             }
         }

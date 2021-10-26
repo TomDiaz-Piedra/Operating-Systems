@@ -279,16 +279,17 @@ module TSOS {
             let isEven:boolean= val.length%2==0;
             const re = /^[0-9a-fA-F]+$/;
             let programLength = val.length;
-            _MemoryManager.checkValid(programLength);
+            validSpace = _MemoryManager.checkValid(programLength);
 
-            if(_MemoryManager.memSegments[0].isEmpty==false){
-                _StdOut.putText("No Space Left in Memory!");
-                validSpace=false;
-            }
-            if(re.test(val) && isEven && validSpace) {
-
-                _MemoryManager.memSegments[0].isEmpty=false;
-                let adr = _MemoryManager.memSegments[0].Start;
+            //if(_MemoryManager.memSegments[0].isEmpty==false){
+           //     _StdOut.putText("No Space Left in Memory!");
+           //     validSpace=false;
+          //  }
+            if(re.test(val) && validSpace) {
+//change to get correct segment
+                let seg=_MemoryManager.getValid();
+                seg.isEmpty=false;
+                let adr = seg.Start;
                 let test:number = val.length;
                 let start=0;
                 let end=2;
@@ -305,8 +306,8 @@ module TSOS {
                 TSOS.Control.UpdateMemDisplay();
 
                 let pcb = new TSOS.processControlBlock();
-                pcb.pc=_MemoryManager.memSegments[0].Start;
-                pcb.segment=_MemoryManager.memSegments[0];
+                pcb.pc=seg.Start;
+                pcb.segment=seg;
                 residentqueue.push(pcb);
                 TSOS.Control.addPcb(pcb);
                 //_StdOut.putText("Valid: PID = "+pcb.pid);
