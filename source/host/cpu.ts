@@ -37,20 +37,11 @@ module TSOS {
             this.zFlag = 0;
             this.isExecuting = false;
         }
-        public loadNewProg(){
-            //end old one
-            //this.programEnd();
-            //load new one
-            this.currentProgram=readyqueue.dequeue();
-            this.loadProgramState();
-            this.currentProgram.state="running";
-            this.step=1;
 
-        }
 
         public startCPU(){
             //this.currentProgram=null;
-            this.init();
+
             let program = readyqueue.dequeue();
             this.currentProgram=program;
             //this.loadProgramState();
@@ -58,29 +49,37 @@ module TSOS {
             this.step=1;
             this.currentProgram.state="running";
             TSOS.Control.updatePCB(this.currentProgram);
-
-
             this.isExecuting=true;
         }
-        public loadProgramState(){
-            this.PC = this.currentProgram.pc;
-            this.Acc = this.currentProgram.acc;
-            this.IR = this.currentProgram.IR;
+        public newProgram(){
+            let newProg = readyqueue.dequeue();
+            this.currentProgram=newProg;
+            this.PC=this.currentProgram.pc;
+            this.Acc=this.currentProgram.acc;
+            this.xReg=this.currentProgram.xReg;
+            this.yReg=this.currentProgram.yReg;
+            this.zFlag=this.currentProgram.zReg;
+            this.IR=this.currentProgram.IR;
             this.step=1;
-            this.xReg = this.currentProgram.xReg;
-            this.yReg = this.currentProgram.yReg;
-            this.zFlag = this.currentProgram.zReg;
+            this.currentProgram.state="running";
+            TSOS.Control.updatePCB(this.currentProgram);
+            this.isExecuting=true;
+
         }
         public programEnd(){
-            //this.currentProgram.state="terminated";
+            _MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
+            this.currentProgram.state="terminated";
             TSOS.Control.updatePCB(this.currentProgram);
-            //let more = readyqueue.isEmpty();
-            if (readyqueue.isEmpty()) {
+            let done = readyqueue.isEmpty();
+            if(done){
                 this.isExecuting = false;
-            } else {
-                this.loadNewProg();
+            }
+            else{
+                this.isExecuting=false;
+                this.newProgram();
             }
         }
+
         //Terminates current program in CPU
         public kill(){
             this.currentProgram.state="Killed";//maybe change to kill for fun idk
@@ -145,7 +144,7 @@ module TSOS {
             this.IR=_MemoryAccessor.getMDR().toString(16).toUpperCase();
             if(this.IR=="0" || this.IR=="3"){ // The 3 check is only there temporarily as i debug it
                 this.IR="00";
-                this.programEnd();
+                this.step=7;
             }
 
             //increment program counter
@@ -405,15 +404,13 @@ module TSOS {
 
             //00 - Break/Stop System
             if(this.IR=="00"){
-                this.currentProgram.state="terminated";
-                _MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
+                //this.currentProgram.state="terminated";
+                //_MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
 
                 //this.currentProgram.state="terminated";
 
-                this.updateCurrent();
-                this.programEnd();
-
-
+                //this.updateCurrent();
+                this.step=7;
             }
 
             //FF - System Call
@@ -434,7 +431,7 @@ module TSOS {
                     while(this.yReg!=0x00){
                         //output memory at spot yreg
                         //let out ="";
-                        let n = _Memory.mem[this.PC].toString(16);
+                        let n = _Memory.mem[this.PC+this.currentProgram.segment.offset].toString(16);
 
                         //out = _Memory.mem[this.yReg];
                         let output = String.fromCharCode(parseInt(n,16));
@@ -443,7 +440,7 @@ module TSOS {
                         this.PC++;
                         this.updateCurrent();
                         //set yreg to value in memory
-                        this.yReg=_Memory.mem[this.PC];
+                        this.yReg=_Memory.mem[this.PC+this.currentProgram.segment.offset];
 
                     }
                     this.PC=tempPC;
@@ -516,9 +513,9 @@ module TSOS {
             _Kernel.krnTrace('CPU cycle');
             // TODO: Accumulate CPU usage and profiling statistics here.
             //Kills Program if it goes out of its Memory Range
-            if(this.PC>this.currentProgram.End || this.PC < this.currentProgram.Start){
-                this.kill();
-            }
+           // if(this.PC>this.currentProgram.End || this.PC < this.currentProgram.Start){
+            //    this.kill();
+          //  }
 
             //Fetch
             if(this.step==1){
@@ -552,6 +549,9 @@ module TSOS {
             else if(this.step==6){
                 this.writeBack();
 
+            }
+            else if(this.step==7){
+                this.programEnd();
             }
             else if(this.PC>=this.currentProgram.End){
                 this.currentProgram.state="Killed";

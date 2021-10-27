@@ -360,7 +360,7 @@ module TSOS {
             _CPU.startCPU();
         }
         public shellRunAll(args){
-            while(residentqueue.isEmpty()==false) {
+            while(!residentqueue.isEmpty()) {
                 let program = residentqueue.dequeue();
                 let x = _ProcessControlBlock.getPCB(program.pid);
                 x.state="ready";
