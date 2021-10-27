@@ -27,6 +27,18 @@ var TSOS;
             //load
             sc = new TSOS.ShellCommand(this.shellLoad, "load", "- Loads user input.");
             this.commandList[this.commandList.length] = sc;
+            //clearMem
+            sc = new TSOS.ShellCommand(this.shellClearMem, "clearmem", "- Kills all programs, then clears memory.");
+            this.commandList[this.commandList.length] = sc;
+            //killAll
+            sc = new TSOS.ShellCommand(this.shellKillAll, "killall", "- kill all programs.");
+            this.commandList[this.commandList.length] = sc;
+            //kill
+            sc = new TSOS.ShellCommand(this.shellKill, "kill", "- kills program.");
+            this.commandList[this.commandList.length] = sc;
+            //runall
+            sc = new TSOS.ShellCommand(this.shellRunAll, "runall", "- runs all programs.");
+            this.commandList[this.commandList.length] = sc;
             //run
             sc = new TSOS.ShellCommand(this.shellRun, "run", "- runs user program.");
             this.commandList[this.commandList.length] = sc;
@@ -210,15 +222,12 @@ var TSOS;
             load = document.getElementById("taProgramInput");
             val = load.value;
             val = val.toString();
+            val.split("\n").join("");
             val = val.split(" ").join("");
             let isEven = val.length % 2 == 0;
             const re = /^[0-9a-fA-F]+$/;
             let programLength = val.length;
             validSpace = _MemoryManager.checkValid(programLength);
-            //if(_MemoryManager.memSegments[0].isEmpty==false){
-            //     _StdOut.putText("No Space Left in Memory!");
-            //     validSpace=false;
-            //  }
             if (re.test(val) && validSpace) {
                 //change to get correct segment
                 let seg = _MemoryManager.getValid();
@@ -238,16 +247,22 @@ var TSOS;
                 }
                 TSOS.Control.UpdateMemDisplay();
                 let pcb = new TSOS.processControlBlock();
-                pcb.pc = seg.Start;
+                //pcb.pc=seg.Start;
                 pcb.segment = seg;
-                residentqueue.push(pcb);
+                residentqueue.enqueue(pcb);
+                residentlist.push(pcb);
                 TSOS.Control.addPcb(pcb);
                 //_StdOut.putText("Valid: PID = "+pcb.pid);
                 _StdOut.putText("Valid: PID = " + pcb.pid);
                 _NextAvailablePID++;
             }
             else {
-                _StdOut.putText("InValid");
+                if (!validSpace) {
+                    _StdOut.putText("No Space Left in Memory!!!");
+                }
+                else {
+                    _StdOut.putText("InValid");
+                }
             }
             re.lastIndex = 0;
         }
@@ -257,8 +272,33 @@ var TSOS;
             let program = _ProcessControlBlock.getPCB(args);
             program.state = "ready";
             TSOS.Control.updatePCB(program);
-            readyqueue.push(program);
-            _CPU.startCPU(program);
+            readyqueue.enqueue(program);
+            _CPU.startCPU();
+        }
+        shellRunAll(args) {
+            while (residentqueue.isEmpty() == false) {
+                let program = residentqueue.dequeue();
+                let x = _ProcessControlBlock.getPCB(program.pid);
+                x.state = "ready";
+                TSOS.Control.updatePCB(x);
+                readyqueue.enqueue(x);
+            }
+            _CPU.startCPU();
+        }
+        shellKill(args) {
+            let pcb = _ProcessControlBlock.getPCB(args);
+            if (pcb.state == "running") {
+                _CPU.kill();
+            }
+            else {
+                _CPU.killSpecific(args);
+            }
+        }
+        shellKillAll(args) {
+            _CPU.killAll();
+        }
+        shellClearMem(args) {
+            _MemoryAccessor.clearMem();
         }
         shellCube(args) {
             let cube = document.getElementById('cube');

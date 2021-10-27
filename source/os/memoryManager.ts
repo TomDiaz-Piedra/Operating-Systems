@@ -4,9 +4,9 @@ module TSOS{
         memSegments:any [];
         constructor(){
             this.memSegments = [
-                { "Start": 0, "size": SEGMENT_LENGTH, "isEmpty": true, "offset":0 ,"End": 255},
-                { "Start": 256, "size": SEGMENT_LENGTH, "isEmpty": true, "offset":256 ,"End": 511},
-                { "Start": 512, "size": SEGMENT_LENGTH, "isEmpty": true, "offset":512 ,"End": 767}]
+                { "Number":0,"Start": 0, "size": SEGMENT_LENGTH, "isEmpty": true, "offset":0 ,"End": 255},
+                { "Number":1,"Start": 256, "size": SEGMENT_LENGTH, "isEmpty": true, "offset":256 ,"End": 511},
+                { "Number":2,"Start": 512, "size": SEGMENT_LENGTH, "isEmpty": true, "offset":512 ,"End": 767}]
         }
         //Checks if there is an empty Segment in memory
         public  checkValid(programLength:number){

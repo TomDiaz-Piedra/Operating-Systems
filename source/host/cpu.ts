@@ -37,15 +37,83 @@ module TSOS {
             this.zFlag = 0;
             this.isExecuting = false;
         }
+        public loadNewProg(){
+            //end old one
+            //this.programEnd();
+            //load new one
+            this.currentProgram=readyqueue.dequeue();
+            this.loadProgramState();
+            this.currentProgram.state="running";
+            this.step=1;
 
-        public startCPU(pcb){
-            this.currentProgram=pcb;
+        }
+
+        public startCPU(){
+            //this.currentProgram=null;
+            this.init();
+            let program = readyqueue.dequeue();
+            this.currentProgram=program;
+            //this.loadProgramState();
             this.PC=this.currentProgram.pc;
             this.step=1;
             this.currentProgram.state="running";
+            TSOS.Control.updatePCB(this.currentProgram);
+
 
             this.isExecuting=true;
         }
+        public loadProgramState(){
+            this.PC = this.currentProgram.pc;
+            this.Acc = this.currentProgram.acc;
+            this.IR = this.currentProgram.IR;
+            this.step=1;
+            this.xReg = this.currentProgram.xReg;
+            this.yReg = this.currentProgram.yReg;
+            this.zFlag = this.currentProgram.zReg;
+        }
+        public programEnd(){
+            //this.currentProgram.state="terminated";
+            TSOS.Control.updatePCB(this.currentProgram);
+            //let more = readyqueue.isEmpty();
+            if (readyqueue.isEmpty()) {
+                this.isExecuting = false;
+            } else {
+                this.loadNewProg();
+            }
+        }
+        //Terminates current program in CPU
+        public kill(){
+            this.currentProgram.state="Killed";//maybe change to kill for fun idk
+            TSOS.Control.updatePCB(this.currentProgram);
+            _MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
+            //Turns off cpu if readyqueue is empty, keeps on and starts with next if not
+            this.programEnd();
+        }
+        public killAll(){
+            this.kill();
+            while(!readyqueue.isEmpty()){
+                let killedProg = readyqueue.dequeue();
+                _MemoryAccessor.clearMem();
+                killedProg.state="Killed";
+                TSOS.Control.updatePCB(this.currentProgram);
+
+            }
+        }
+        public killSpecific(pid:number){
+            let pcb = _ProcessControlBlock.getPCB(pid);
+            for(let i=0;i<readyqueue.getSize();i++){
+                let temp = readyqueue.dequeue();
+                if(temp.pid==pid){
+                    temp.state="Killed";
+                    TSOS.Control.updatePCB(this.currentProgram);
+                }
+                else{
+                    readyqueue.enqueue(temp);
+                }
+
+            }
+        }
+
 
         public updateCurrent(){
             this.currentProgram.pc=this.PC;
@@ -72,11 +140,12 @@ module TSOS {
         public fetch(){
             //get op code from code at position program counter
             //this.op=this.mmu.mem.memory[this.pc];
-            _MemoryAccessor.setMAR(this.PC);
+            _MemoryAccessor.setMAR(this.PC+this.currentProgram.segment.offset);
             _MemoryAccessor.read();
             this.IR=_MemoryAccessor.getMDR().toString(16).toUpperCase();
             if(this.IR=="0" || this.IR=="3"){ // The 3 check is only there temporarily as i debug it
                 this.IR="00";
+                this.programEnd();
             }
 
             //increment program counter
@@ -88,7 +157,7 @@ module TSOS {
         public decode1(){
             if(this.IR=="AD" || this.IR=="8D" || this.IR=="6D" || this.IR=="AE" || this.IR=="AC" || this.IR=="EC" || this.IR=="EE"){
                 //this.mmu.setHOB(this.mmu.mem.memory[this.pc]);
-                _MemoryAccessor.setMAR(this.PC);
+                _MemoryAccessor.setMAR(this.PC+this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
                 _MemoryAccessor.setHOB(_MemoryAccessor.getMDR());
                 this.PC++;
@@ -104,7 +173,7 @@ module TSOS {
 
         public decode2(){
             //this.mmu.setLOB(this.mmu.mem.memory[this.pc]);
-            _MemoryAccessor.setMAR(this.PC);
+            _MemoryAccessor.setMAR(this.PC+this.currentProgram.segment.offset);
             _MemoryAccessor.read();
             _MemoryAccessor.setLOB(_MemoryAccessor.getMDR());
             this.step=4;
@@ -114,9 +183,10 @@ module TSOS {
             //A9 - Load Accumulator with a Constant - 4 CPU Cycles
             if(this.IR=="A9"){
                 //this.acc=this.mmu.mem.memory[this.pc];
-                _MemoryAccessor.setMAR(this.PC);
+                _MemoryAccessor.setMAR(this.PC+this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
-                let num = this.checkComp(_MemoryAccessor.getMDR());
+                //let num = this.checkComp(_MemoryAccessor.getMDR());
+                let num =_MemoryAccessor.getMDR();
                 this.Acc =num;
                 this.PC++;
                 this.updateCurrent();
@@ -125,9 +195,10 @@ module TSOS {
 
             //A2 - Load X register with a constant - 4 CPU Cycles
             if(this.IR=="A2"){
-                _MemoryAccessor.setMAR(this.PC);
+                _MemoryAccessor.setMAR(this.PC+this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
-                let num = this.checkComp(_MemoryAccessor.getMDR());
+                //let num = this.checkComp(_MemoryAccessor.getMDR());
+                let num =_MemoryAccessor.getMDR();
                 this.setXreg(num);
                 //this.setXreg(this.mmu.mem.memory[this.pc]);
                 this.PC++;
@@ -137,9 +208,11 @@ module TSOS {
 
             //A0 - Load Y register with a constant - 4 CPU Cycles
             if(this.IR=="A0"){
-                _MemoryAccessor.setMAR(this.PC);
+                _MemoryAccessor.setMAR(this.PC+this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
-                let num = this.checkComp(_MemoryAccessor.getMDR());
+                //let num = this.checkComp(_MemoryAccessor.getMDR());
+                let num =_MemoryAccessor.getMDR();
+
                 this.setYreg(num);
                 //this.setYreg(this.mmu.mem.memory[this.pc]);
                 this.PC++;
@@ -156,7 +229,8 @@ module TSOS {
                 }
 
                 if(this.zFlag==0){
-                    _MemoryAccessor.setMAR(this.PC);
+                    //this.PC++;
+                    _MemoryAccessor.setMAR(this.PC+this.currentProgram.segment.offset);
                     _MemoryAccessor.read();
                     const hex = _MemoryAccessor.getMDR();
                     let offset=this.checkComp(hex);
@@ -166,6 +240,12 @@ module TSOS {
 
 
                     this.PC =this.PC +offset;
+                    if(this.PC>255){
+                        this.PC = this.PC-256;
+                    }
+                    if(this.PC<0){
+                        this.kill();
+                    }
                     this.updateCurrent();
                     this.step=1;
 
@@ -177,9 +257,10 @@ module TSOS {
             if(this.IR=="AD"){
                 let adr=this.hexValue(_MemoryAccessor.getLOB(),2).concat(this.hexValue(_MemoryAccessor.getHOB(),2));
                 let a =parseInt(adr, 16)-1;
-                _MemoryAccessor.setMAR(a);
+                _MemoryAccessor.setMAR(a+this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
-                let num = this.checkComp(_MemoryAccessor.getMDR());
+                //let num = this.checkComp(_MemoryAccessor.getMDR());
+                let num =_MemoryAccessor.getMDR();
                 this.Acc =num;
                 this.PC++;
                 this.updateCurrent();
@@ -189,9 +270,10 @@ module TSOS {
             //AE - Load X register from Memory - 5 Cycles
             if(this.IR=="AE"){
                 let adr=this.hexValue(_MemoryAccessor.getLOB(),2).concat(this.hexValue(_MemoryAccessor.getHOB(),2));
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1);
+                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
-                let num = this.checkComp(_MemoryAccessor.getMDR());
+                //let num = this.checkComp(_MemoryAccessor.getMDR());
+                let num =_MemoryAccessor.getMDR();
                 this.setXreg(num);
                 //this.setXreg(this.mmu.mem.memory[parseInt(adr,16)-1]);
                 this.PC++;
@@ -202,9 +284,11 @@ module TSOS {
             //AC - Load Y register from Memory - 5 Cycles
             if(this.IR=="AC"){
                 let adr=this.hexValue(_MemoryAccessor.getLOB(),2).concat(this.hexValue(_MemoryAccessor.getHOB(),2));
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1);
+                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
-                let num = this.checkComp(_MemoryAccessor.getMDR());
+                //let num = this.checkComp(_MemoryAccessor.getMDR());
+                let num =_MemoryAccessor.getMDR();
+
                 this.setYreg(num);
                 //this.setYreg(this.mmu.mem.memory[parseInt(adr,16)-1]);
                 this.PC++;
@@ -233,7 +317,7 @@ module TSOS {
                 let a1=this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr=a2.concat(a1);
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1);
+                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.setMDR(this.Acc);
                 _MemoryAccessor.write();
                 //this.mmu.mem.memory[parseInt(adr,16)-1]=this.acc;
@@ -249,7 +333,7 @@ module TSOS {
                 let a1=this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr=a2.concat(a1);
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1);
+                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
                 let num = this.checkComp(_MemoryAccessor.getMDR());
                 //let num = this.mmu.mem.memory[parseInt(adr,16)-1];
@@ -266,7 +350,7 @@ module TSOS {
                 let a1=this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr=a2.concat(a1);
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1);
+                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
                 let byte=_MemoryAccessor.getMDR();
                 //let byte = this.mmu.mem.memory[parseInt(adr,16)-1];
@@ -284,7 +368,9 @@ module TSOS {
 
             //8A - Load Accumulator from X register - 4 Cycles
             if(this.IR=="8A"){
-                let num = this.checkComp(this.getXreg());
+                //let num = this.checkComp(this.getXreg());
+                let num =_MemoryAccessor.getMDR();
+
                 this.Acc =num;
                 this.PC++;
                 this.updateCurrent();
@@ -293,7 +379,9 @@ module TSOS {
 
             //98 - Load Accumulator from Y register - 4 Cycles
             if(this.IR=="98"){
-                let num = this.checkComp(this.getYreg());
+                //let num = this.checkComp(this.getYreg());
+                let num =_MemoryAccessor.getMDR();
+
                 this.Acc =num;
                 this.PC++;
                 this.updateCurrent();
@@ -305,9 +393,10 @@ module TSOS {
                 let a1=this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr=a2.concat(a1);
-               _MemoryAccessor.setMAR(parseInt(adr,16)-1);
+               _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
-                let num = this.checkComp(_MemoryAccessor.getMDR());
+                //let num = this.checkComp(_MemoryAccessor.getMDR());
+                let num = _MemoryAccessor.getMDR();
                 this.Acc =num;
                 this.updateCurrent();
                 //this.acc=this.mmu.mem.memory[parseInt(adr,16)-1];
@@ -316,11 +405,13 @@ module TSOS {
 
             //00 - Break/Stop System
             if(this.IR=="00"){
-                _MemoryAccessor.clearSegment(0);
                 this.currentProgram.state="terminated";
+                _MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
+
+                //this.currentProgram.state="terminated";
 
                 this.updateCurrent();
-                this.isExecuting=false;
+                this.programEnd();
 
 
             }
@@ -408,7 +499,7 @@ module TSOS {
                 let a1=this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr=a2.concat(a1);
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1);
+                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.setMDR(this.Acc);
                 _MemoryAccessor.write();
                 //this.mmu.mem.memory[parseInt(adr,16)-1]=this.acc;
@@ -424,7 +515,10 @@ module TSOS {
         public cycle(): void {
             _Kernel.krnTrace('CPU cycle');
             // TODO: Accumulate CPU usage and profiling statistics here.
-
+            //Kills Program if it goes out of its Memory Range
+            if(this.PC>this.currentProgram.End || this.PC < this.currentProgram.Start){
+                this.kill();
+            }
 
             //Fetch
             if(this.step==1){
@@ -460,8 +554,8 @@ module TSOS {
 
             }
             else if(this.PC>=this.currentProgram.End){
-                this.currentProgram.state="Terminated";
-                readyqueue.pop();
+                this.currentProgram.state="Killed";
+                //readyqueue.dequeue();
 
             }
             TSOS.Control.updatePCB(this.currentProgram);

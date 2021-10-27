@@ -11,6 +11,8 @@
 //
 // Global CONSTANTS (TypeScript 1.5 introduced const. Very cool.)
 //
+
+
 const APP_NAME: string    = "TDP OS";   // 'cause Bob and I were at a loss for a better name.
 const APP_VERSION: string = "7.20";   // What did you expect? 0.07
 
@@ -31,8 +33,9 @@ var _MemoryAccessor:TSOS.MemoryAccessor;
 var _MemoryManager: TSOS.MemoryManager;
 var _ProcessControlBlock: TSOS.processControlBlock;
 var _NextAvailablePID = 0;
-var readyqueue = [];
-var residentqueue =[];
+var readyqueue:TSOS.Queue;
+var residentqueue:TSOS.Queue;
+var residentlist=[];
 var SEGMENT_LENGTH = 512;
 var Quantum = 6;
 var SEG_NUM = 3;

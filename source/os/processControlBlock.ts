@@ -12,6 +12,10 @@ module TSOS{
         public priority;
         public pid;
         public segment;
+        //public segmentNum;
+        //public base;
+        //public limit;
+        //public offset;
 
 
 
@@ -27,16 +31,23 @@ module TSOS{
             this.priority=0;
             this.pid=_NextAvailablePID;
             this.segment=this.segment;
+            //this.base=this.segment.Start;
+            //this.limit=this.segment.End;
+            //this.offset=this.segment.offset;
+            //this.segmentNum=this.segment.Number;
 
 
         }
 
         getPCB(pid:number){
             let ans;
-            for(let i=0;i<residentqueue.length;i++){
-                if(residentqueue[i].pid==pid){
-                    ans = residentqueue[i];
+            for(let i=0;i<residentlist.length;i++){
+                let pcb = residentlist[i];
+                if(pcb.pid==pid){
+                    ans = pcb;
+
                 }
+                //residentqueue.enqueue(pcb);
             }
             return ans;
         }

@@ -45,7 +45,7 @@ var TSOS;
         clearSegment(segment) {
             let memSeg = _MemoryManager.memSegments[segment].Start;
             //Clears the memory segment by rewriting each slot to 0x00, then updates memory display for GUI.
-            for (let i = memSeg; i < memSeg + SEGMENT_LENGTH; i++) {
+            for (let i = memSeg; i < memSeg + 255; i++) {
                 this.setMAR(i);
                 this.setMDR(0x00);
                 this.write();
@@ -53,6 +53,17 @@ var TSOS;
             }
             //Once the old program has been wiped, the Memory Manager can make the Segment Available Again!
             _MemoryManager.UpdateValid(segment);
+        }
+        clearMem() {
+            _CPU.killAll();
+            for (let i = 0; i < 767; i++) {
+                this.setMDR(0x00);
+                this.setMAR(i);
+                this.write();
+            }
+            for (let j = 0; j < _MemoryManager.memSegments.length; j++) {
+                _MemoryManager.memSegments[j].isEmpty = true;
+            }
         }
     }
     TSOS.MemoryAccessor = MemoryAccessor;
