@@ -379,7 +379,9 @@ module TSOS {
             }
         }
         public shellKillAll(args){
-            _CPU.killAll();
+            //_CPU.killAll();
+            _MemoryAccessor.clearMem();
+
         }
         public shellClearMem(args){
             _MemoryAccessor.clearMem();

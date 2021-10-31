@@ -32,6 +32,8 @@ var _Memory:TSOS.Memory;
 var _MemoryAccessor:TSOS.MemoryAccessor;
 var _MemoryManager: TSOS.MemoryManager;
 var _ProcessControlBlock: TSOS.processControlBlock;
+var _Scheduler: TSOS.Scheduler;
+var _Dispatcher: TSOS.Dispatcher;
 var _NextAvailablePID = 0;
 var readyqueue:TSOS.Queue;
 var residentqueue:TSOS.Queue;

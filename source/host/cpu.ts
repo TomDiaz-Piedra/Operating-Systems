@@ -76,7 +76,8 @@ module TSOS {
             }
             else{
                 this.isExecuting=false;
-                this.newProgram();
+                //this.newProgram();
+                _Scheduler.roundRobin();
             }
         }
 
@@ -92,11 +93,12 @@ module TSOS {
             this.kill();
             while(!readyqueue.isEmpty()){
                 let killedProg = readyqueue.dequeue();
-                _MemoryAccessor.clearMem();
+               // _MemoryAccessor.clearSegment(killedProg.segment.Number);
                 killedProg.state="Killed";
                 TSOS.Control.updatePCB(this.currentProgram);
 
             }
+           // _MemoryAccessor.clearMem();
         }
         public killSpecific(pid:number){
             let pcb = _ProcessControlBlock.getPCB(pid);
@@ -116,7 +118,7 @@ module TSOS {
 
         public updateCurrent(){
             this.currentProgram.pc=this.PC;
-            this.currentProgram.ir=this.IR;
+            this.currentProgram.IR=this.IR;
             this.currentProgram.acc=this.Acc;
             this.currentProgram.xReg=this.xReg;
             this.currentProgram.yReg=this.yReg;
@@ -519,10 +521,15 @@ module TSOS {
 
             //Fetch
             if(this.step==1){
+
                 //Call the scheduler and check whether or not the quantum has been used up
                 //if so, contact dispatcher to start a context switch
                 //go forth with fetch after switch(if switched)
+                _Scheduler.roundRobin();
                 this.fetch();
+                //after we have fetched we will increment the programs quantum.
+                //we do it afterwards to ensure the program gets the correct amount of runs through
+                this.currentProgram.quanta++;
 
             }
             //Decode1
@@ -551,7 +558,9 @@ module TSOS {
 
             }
             else if(this.step==7){
-                this.programEnd();
+                //this.currentProgram.state='terminated';
+                _Scheduler.programEnd();
+                //this.programEnd();
             }
             else if(this.PC>=this.currentProgram.End){
                 this.currentProgram.state="Killed";

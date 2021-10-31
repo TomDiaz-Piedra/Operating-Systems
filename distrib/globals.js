@@ -25,6 +25,8 @@ var _Memory;
 var _MemoryAccessor;
 var _MemoryManager;
 var _ProcessControlBlock;
+var _Scheduler;
+var _Dispatcher;
 var _NextAvailablePID = 0;
 var readyqueue;
 var residentqueue;

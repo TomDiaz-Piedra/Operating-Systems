@@ -192,6 +192,8 @@ module TSOS {
             _ProcessControlBlock = new processControlBlock();
             readyqueue = new Queue();
             residentqueue= new Queue();
+            _Scheduler = new Scheduler();
+            _Dispatcher = new Dispatcher();
 
             // ... then set the host clock pulse ...
             _hardwareClockID = setInterval(Devices.hostClockPulse, CPU_CLOCK_INTERVAL);

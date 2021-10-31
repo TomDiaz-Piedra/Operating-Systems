@@ -295,7 +295,8 @@ var TSOS;
             }
         }
         shellKillAll(args) {
-            _CPU.killAll();
+            //_CPU.killAll();
+            _MemoryAccessor.clearMem();
         }
         shellClearMem(args) {
             _MemoryAccessor.clearMem();
