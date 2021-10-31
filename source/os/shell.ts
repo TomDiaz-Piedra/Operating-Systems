@@ -67,6 +67,12 @@ module TSOS {
                 "- runs user program.");
             this.commandList[this.commandList.length] = sc;
 
+            //Quantum
+            sc = new ShellCommand(this.shellQuantum,
+                "quantum",
+                "- Change round robin quantum.");
+            this.commandList[this.commandList.length] = sc;
+
             //status
             sc = new ShellCommand(this.shellStatus,
                 "status",
@@ -385,6 +391,13 @@ module TSOS {
         }
         public shellClearMem(args){
             _MemoryAccessor.clearMem();
+        }
+        public shellQuantum(args){
+            if(args<=0 || args.typeof(String)){
+                _StdOut.putText("Invalid Quantum!");
+
+            }
+            Quantum = args;
         }
 
 

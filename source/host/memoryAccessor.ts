@@ -61,10 +61,10 @@ module TSOS{
                 this.setMAR(i);
                 this.setMDR(0x00);
                 this.write();
-                TSOS.Control.UpdateMemDisplay();
 
             }
             //Once the old program has been wiped, the Memory Manager can make the Segment Available Again!
+            TSOS.Control.UpdateMemDisplay();
             _MemoryManager.UpdateValid(segment);
 
         }

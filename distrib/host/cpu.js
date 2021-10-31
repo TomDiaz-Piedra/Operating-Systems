@@ -45,20 +45,6 @@ var TSOS;
             TSOS.Control.updatePCB(this.currentProgram);
             this.isExecuting = true;
         }
-        newProgram() {
-            let newProg = readyqueue.dequeue();
-            this.currentProgram = newProg;
-            this.PC = this.currentProgram.pc;
-            this.Acc = this.currentProgram.acc;
-            this.xReg = this.currentProgram.xReg;
-            this.yReg = this.currentProgram.yReg;
-            this.zFlag = this.currentProgram.zReg;
-            this.IR = this.currentProgram.IR;
-            this.step = 1;
-            this.currentProgram.state = "running";
-            TSOS.Control.updatePCB(this.currentProgram);
-            this.isExecuting = true;
-        }
         programEnd() {
             _MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
             this.currentProgram.state = "terminated";
@@ -75,9 +61,9 @@ var TSOS;
         }
         //Terminates current program in CPU
         kill() {
-            this.currentProgram.state = "Killed"; //maybe change to kill for fun idk
-            TSOS.Control.updatePCB(this.currentProgram);
-            _MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
+            //this.currentProgram.state="Killed";//maybe change to kill for fun idk
+            //TSOS.Control.updatePCB(this.currentProgram);
+            // _MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
             //Turns off cpu if readyqueue is empty, keeps on and starts with next if not
             this.programEnd();
         }
@@ -85,19 +71,20 @@ var TSOS;
             this.kill();
             while (!readyqueue.isEmpty()) {
                 let killedProg = readyqueue.dequeue();
+                this.currentProgram = killedProg;
+                this.programEnd();
                 // _MemoryAccessor.clearSegment(killedProg.segment.Number);
-                killedProg.state = "Killed";
-                TSOS.Control.updatePCB(this.currentProgram);
+                //killedProg.state="Killed";
+                //TSOS.Control.updatePCB(this.currentProgram);
             }
             // _MemoryAccessor.clearMem();
         }
         killSpecific(pid) {
-            let pcb = _ProcessControlBlock.getPCB(pid);
             for (let i = 0; i < readyqueue.getSize(); i++) {
                 let temp = readyqueue.dequeue();
                 if (temp.pid == pid) {
-                    temp.state = "Killed";
-                    TSOS.Control.updatePCB(this.currentProgram);
+                    temp.state = "terminated";
+                    TSOS.Control.updatePCB(temp);
                 }
                 else {
                     readyqueue.enqueue(temp);
@@ -459,6 +446,14 @@ var TSOS;
             //  }
             //Fetch
             if (this.step == 1) {
+                //Turnaround and Wait Time
+                this.currentProgram.turnaround++;
+                for (let i = 0; i < readyqueue.getSize(); i++) {
+                    let prog = readyqueue.dequeue();
+                    prog.wait++;
+                    prog.turnaround++;
+                    readyqueue.enqueue(prog);
+                }
                 //Call the scheduler and check whether or not the quantum has been used up
                 //if so, contact dispatcher to start a context switch
                 //go forth with fetch after switch(if switched)

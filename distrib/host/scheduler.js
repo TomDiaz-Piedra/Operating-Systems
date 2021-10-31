@@ -9,6 +9,7 @@ var TSOS;
             _CPU.currentProgram.state = "terminated";
             TSOS.Control.updatePCB(_CPU.currentProgram);
             _MemoryAccessor.clearSegment(_CPU.currentProgram.segment.Number);
+            _StdOut.putText("Turnaround: " + _CPU.currentProgram.turnaround + " Wait: " + _CPU.currentProgram.wait);
             //if the current program is terminated we want to either swap to the next one, or stop the cpu if there are none left
             // if(_CPU.currentProgram.state=='terminated'){
             //If there are no programs left we stop the cpu

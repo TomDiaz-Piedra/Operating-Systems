@@ -42,6 +42,9 @@ var TSOS;
             //run
             sc = new TSOS.ShellCommand(this.shellRun, "run", "- runs user program.");
             this.commandList[this.commandList.length] = sc;
+            //Quantum
+            sc = new TSOS.ShellCommand(this.shellQuantum, "quantum", "- Change round robin quantum.");
+            this.commandList[this.commandList.length] = sc;
             //status
             sc = new TSOS.ShellCommand(this.shellStatus, "status", "- Changes status message to user input");
             this.commandList[this.commandList.length] = sc;
@@ -300,6 +303,12 @@ var TSOS;
         }
         shellClearMem(args) {
             _MemoryAccessor.clearMem();
+        }
+        shellQuantum(args) {
+            if (args <= 0 || args.typeof(String)) {
+                _StdOut.putText("Invalid Quantum!");
+            }
+            Quantum = args;
         }
         shellCube(args) {
             let cube = document.getElementById('cube');

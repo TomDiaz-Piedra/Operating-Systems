@@ -18,6 +18,8 @@ var TSOS;
             this.pid = _NextAvailablePID;
             this.segment = this.segment;
             this.quanta = 0;
+            this.turnaround = 0;
+            this.wait = 0;
             //this.base=this.segment.Start;
             //this.limit=this.segment.End;
             //this.offset=this.segment.offset;
