@@ -79,16 +79,29 @@ var TSOS;
             }
             // _MemoryAccessor.clearMem();
         }
-        killSpecific(pid) {
+        //Kills a non running process on the readyqueue
+        killNotRunning(pid) {
             for (let i = 0; i < readyqueue.getSize(); i++) {
                 let temp = readyqueue.dequeue();
-                if (temp.pid == pid) {
-                    temp.state = "terminated";
-                    TSOS.Control.updatePCB(temp);
+                if (temp.pid = pid) {
+                    _Scheduler.programEnd(temp, true);
                 }
                 else {
                     readyqueue.enqueue(temp);
                 }
+            }
+        }
+        checkBounds(adr) {
+            //Checks if the Program Counter is Violating Memory Boundaries
+            let currentPC = this.PC + this.currentProgram.segment.offset;
+            if (currentPC < this.currentProgram.segment.Start || currentPC > this.currentProgram.segment.End) {
+                _StdOut.putText("Process PID: " + this.currentProgram.pid + " Killed for violating Memory Boundaries!");
+                _Scheduler.programEnd(this.currentProgram, false);
+            }
+            //Checks if Memory Calls are Violating Memory Boundaries
+            if (adr < this.currentProgram.segment.Start || adr > this.currentProgram.segment.End) {
+                _StdOut.putText("Process PID: " + this.currentProgram.pid + " Killed for violating Memory Boundaries!");
+                _Scheduler.programEnd(this.currentProgram, false);
             }
         }
         updateCurrent() {
@@ -115,10 +128,19 @@ var TSOS;
         fetch() {
             //get op code from code at position program counter
             //this.op=this.mmu.mem.memory[this.pc];
+            //check if the process is violating its memory boundaries
+            // this.checkBounds(this.PC+this.currentProgram.segment.offset);
             _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
             _MemoryAccessor.read();
             this.IR = _MemoryAccessor.getMDR().toString(16).toUpperCase();
-            if (this.IR == "0" || this.IR == "3") { // The 3 check is only there temporarily as i debug it
+            if (this.IR == "AD" || this.IR == "8D" || this.IR == "6D" || this.IR == "AE" || this.IR == "AC" || this.IR == "EC" || this.IR == "EE" || this.IR == "A9" || this.IR == "A2"
+                || this.IR == "A0" || this.IR == "D0" || this.IR == "AA" || this.IR == "A8" || this.IR == "8A" || this.IR == "98" || this.IR == "0" || this.IR == "FF" || this.IR == "EA") {
+            }
+            else {
+                _StdOut.putText("Error Invalid OP Code: " + this.IR + " ");
+                _Scheduler.programEnd(this.currentProgram, false);
+            }
+            if (this.IR == "0") {
                 this.IR = "00";
                 this.step = 7;
             }
@@ -128,6 +150,8 @@ var TSOS;
             this.step = 2;
         }
         decode1() {
+            //check if the process is violating its memory boundaries
+            // this.checkBounds(this.PC+this.currentProgram.segment.offset);
             if (this.IR == "AD" || this.IR == "8D" || this.IR == "6D" || this.IR == "AE" || this.IR == "AC" || this.IR == "EC" || this.IR == "EE") {
                 //this.mmu.setHOB(this.mmu.mem.memory[this.pc]);
                 _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
@@ -142,6 +166,8 @@ var TSOS;
             }
         }
         decode2() {
+            //check if the process is violating its memory boundaries
+            //  this.checkBounds(this.PC+this.currentProgram.segment.offset);
             //this.mmu.setLOB(this.mmu.mem.memory[this.pc]);
             _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
             _MemoryAccessor.read();
@@ -149,6 +175,8 @@ var TSOS;
             this.step = 4;
         }
         execute1() {
+            //check if the process is violating its memory boundaries
+            //   this.checkBounds(this.PC+this.currentProgram.segment.offset);
             //A9 - Load Accumulator with a Constant - 4 CPU Cycles
             if (this.IR == "A9") {
                 //this.acc=this.mmu.mem.memory[this.pc];
@@ -193,7 +221,8 @@ var TSOS;
                     this.step = 1;
                 }
                 if (this.zFlag == 0) {
-                    //this.PC++;
+                    //this.PC++
+                    //  this.checkBounds(this.PC+this.currentProgram.segment.offset);
                     _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
                     _MemoryAccessor.read();
                     const hex = _MemoryAccessor.getMDR();
@@ -205,9 +234,7 @@ var TSOS;
                     if (this.PC > 255) {
                         this.PC = this.PC - 256;
                     }
-                    if (this.PC < 0) {
-                        this.kill();
-                    }
+                    //  this.checkBounds(this.PC);
                     this.updateCurrent();
                     this.step = 1;
                 }
@@ -216,6 +243,7 @@ var TSOS;
             if (this.IR == "AD") {
                 let adr = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
                 let a = parseInt(adr, 16) - 1;
+                //  this.checkBounds(a+this.currentProgram.segment.offset);
                 _MemoryAccessor.setMAR(a + this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
                 //let num = this.checkComp(_MemoryAccessor.getMDR());
@@ -228,6 +256,7 @@ var TSOS;
             //AE - Load X register from Memory - 5 Cycles
             if (this.IR == "AE") {
                 let adr = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
+                //  this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
                 //let num = this.checkComp(_MemoryAccessor.getMDR());
@@ -241,6 +270,7 @@ var TSOS;
             //AC - Load Y register from Memory - 5 Cycles
             if (this.IR == "AC") {
                 let adr = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
+                //    this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
                 //let num = this.checkComp(_MemoryAccessor.getMDR());
@@ -270,6 +300,7 @@ var TSOS;
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
+                //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);//+this.currentProgram.segment.offset
                 _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
                 _MemoryAccessor.setMDR(this.Acc);
                 _MemoryAccessor.write();
@@ -284,6 +315,7 @@ var TSOS;
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
+                //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
                 let num = this.checkComp(_MemoryAccessor.getMDR());
@@ -299,6 +331,7 @@ var TSOS;
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
+                //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
                 let byte = _MemoryAccessor.getMDR();
@@ -337,6 +370,7 @@ var TSOS;
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
+                //    this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);//+this.currentProgram.segment.offset
                 _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
                 //let num = this.checkComp(_MemoryAccessor.getMDR());
@@ -372,6 +406,7 @@ var TSOS;
                     while (this.yReg != 0x00) {
                         //output memory at spot yreg
                         //let out ="";
+                        //    this.checkBounds(this.PC+this.currentProgram.segment.offset);
                         let n = _Memory.mem[this.PC + this.currentProgram.segment.offset].toString(16);
                         //out = _Memory.mem[this.yReg];
                         let output = String.fromCharCode(parseInt(n, 16));
@@ -428,6 +463,7 @@ var TSOS;
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
+                //this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
                 _MemoryAccessor.setMDR(this.Acc);
                 _MemoryAccessor.write();
@@ -444,6 +480,7 @@ var TSOS;
             // if(this.PC>this.currentProgram.End || this.PC < this.currentProgram.Start){
             //    this.kill();
             //  }
+            //this.checkBounds(this.PC+this.currentProgram.segment.offset);
             //Fetch
             if (this.step == 1) {
                 //Turnaround and Wait Time
@@ -485,14 +522,11 @@ var TSOS;
             }
             else if (this.step == 7) {
                 //this.currentProgram.state='terminated';
-                _Scheduler.programEnd();
+                _Scheduler.programEnd(this.currentProgram, false);
                 //this.programEnd();
             }
-            else if (this.PC >= this.currentProgram.End) {
-                this.currentProgram.state = "Killed";
-                //readyqueue.dequeue();
-            }
             TSOS.Control.updatePCB(this.currentProgram);
+            TSOS.Control.UpdateMemDisplay();
             // Do the real work here. Be sure to set this.isExecuting appropriately.
         }
     }

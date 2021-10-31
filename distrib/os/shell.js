@@ -272,30 +272,56 @@ var TSOS;
         shellRun(args) {
             //_StdOut.putText(_Memory.mem[4].toString());
             //_StdOut.putText(_Memory.mem[5].toString());
-            let program = _ProcessControlBlock.getPCB(args);
-            program.state = "ready";
-            TSOS.Control.updatePCB(program);
-            readyqueue.enqueue(program);
-            _CPU.startCPU();
+            var found = false;
+            for (let i = 0; i < residentqueue.getSize(); i++) {
+                let temp = residentqueue.dequeue();
+                if (temp.pid == args) {
+                    found = true;
+                    temp.state = "ready";
+                    TSOS.Control.updatePCB(temp);
+                    readyqueue.enqueue(temp);
+                    _CPU.startCPU();
+                }
+                else {
+                    residentqueue.enqueue(temp);
+                }
+            }
+            if (found) {
+                _StdOut.putText("Running Process With PID: " + args);
+            }
+            else {
+                if (!found) {
+                    _StdOut.putText("No Process Found With PID: " + args);
+                }
+                else if (residentqueue.isEmpty()) {
+                    _StdOut.putText("No Processes Loaded! ");
+                }
+            }
         }
         shellRunAll(args) {
-            while (!residentqueue.isEmpty()) {
-                let program = residentqueue.dequeue();
-                let x = _ProcessControlBlock.getPCB(program.pid);
-                x.state = "ready";
-                TSOS.Control.updatePCB(x);
-                readyqueue.enqueue(x);
+            if (!residentqueue.isEmpty()) {
+                while (!residentqueue.isEmpty()) {
+                    let program = residentqueue.dequeue();
+                    let x = _ProcessControlBlock.getPCB(program.pid);
+                    x.state = "ready";
+                    TSOS.Control.updatePCB(x);
+                    readyqueue.enqueue(x);
+                }
+                _CPU.startCPU();
             }
-            _CPU.startCPU();
+            else {
+                _StdOut.putText(" No Processes Loaded In Memory!!!");
+            }
         }
         shellKill(args) {
             let pcb = _ProcessControlBlock.getPCB(args);
             if (pcb.state == "running") {
                 _CPU.kill();
             }
-            else {
-                _CPU.killSpecific(args);
+            else if (pcb.state == 'ready') {
+                _CPU.killNotRunning(args);
             }
+            // _StdOut.advanceLine();
         }
         shellKillAll(args) {
             //_CPU.killAll();
@@ -305,10 +331,12 @@ var TSOS;
             _MemoryAccessor.clearMem();
         }
         shellQuantum(args) {
-            if (args <= 0 || args.typeof(String)) {
+            if (args <= 0 || args instanceof String) {
                 _StdOut.putText("Invalid Quantum!");
             }
-            Quantum = args;
+            else {
+                Quantum = args;
+            }
         }
         shellCube(args) {
             let cube = document.getElementById('cube');

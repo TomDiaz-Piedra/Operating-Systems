@@ -2,6 +2,7 @@ var TSOS;
 (function (TSOS) {
     class Dispatcher {
         contextSwitch() {
+            _Kernel.krnTrace('Context Switch');
             this.saveState();
             this.loadNew();
         }
@@ -12,6 +13,7 @@ var TSOS;
             if (_CPU.currentProgram.state == 'terminated') {
             }
             else {
+                _Kernel.krnTrace('Saving Process State');
                 _CPU.currentProgram.state = 'ready';
                 TSOS.Control.updatePCB(_CPU.currentProgram);
                 _CPU.updateCurrent();

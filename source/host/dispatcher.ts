@@ -2,6 +2,7 @@ module TSOS{
     export class Dispatcher{
 
         public contextSwitch() {
+            _Kernel.krnTrace('Context Switch');
             this.saveState();
             this.loadNew();
         }
@@ -9,10 +10,12 @@ module TSOS{
         //Reset the Programs quantum to zero
         //Put it back onto the readyqueue
         public saveState(){
+
             if(_CPU.currentProgram.state=='terminated'){
 
             }
             else{
+                _Kernel.krnTrace('Saving Process State');
                 _CPU.currentProgram.state='ready';
                 TSOS.Control.updatePCB(_CPU.currentProgram);
                 _CPU.updateCurrent();
