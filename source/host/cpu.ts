@@ -62,17 +62,12 @@ module TSOS {
             }
             else{
                 this.isExecuting=false;
-                //this.newProgram();
                 _Scheduler.roundRobin();
             }
         }
 
         //Terminates current program in CPU
         public kill(){
-            //this.currentProgram.state="Killed";//maybe change to kill for fun idk
-            //TSOS.Control.updatePCB(this.currentProgram);
-           // _MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
-            //Turns off cpu if readyqueue is empty, keeps on and starts with next if not
             this.programEnd();
         }
         public killAll(){
@@ -81,9 +76,7 @@ module TSOS {
                 let killedProg = readyqueue.dequeue();
                 this.currentProgram=killedProg;
                 this.programEnd();
-               // _MemoryAccessor.clearSegment(killedProg.segment.Number);
-                //killedProg.state="Killed";
-                //TSOS.Control.updatePCB(this.currentProgram);
+
 
             }
            // _MemoryAccessor.clearMem();
@@ -101,19 +94,18 @@ module TSOS {
 
             }
         }
-        public checkBounds(adr){
-            //Checks if the Program Counter is Violating Memory Boundaries
-            let currentPC = this.PC+this.currentProgram.segment.offset;
-            if(currentPC<this.currentProgram.segment.Start || currentPC>this.currentProgram.segment.End){
-                _StdOut.putText("Process PID: "+this.currentProgram.pid+" Killed for violating Memory Boundaries!")
-                _Scheduler.programEnd(this.currentProgram,false);
-            }
-            //Checks if Memory Calls are Violating Memory Boundaries
-            if(adr<this.currentProgram.segment.Start || adr>this.currentProgram.segment.End){
-                _StdOut.putText("Process PID: "+this.currentProgram.pid+" Killed for violating Memory Boundaries!")
-                _Scheduler.programEnd(this.currentProgram,false);
-            }
 
+
+
+
+
+
+        //Checks if the Program is trying to access Memory outside of its segment
+        public checkBoundsMem(adr){
+            if(adr>this.currentProgram.segment.End || adr<this.currentProgram.segment.Start){
+                _StdOut.putText("Error: Memory Boundary Infraction! Prepare for Neurotoxin!");
+                _Scheduler.programEnd(this.currentProgram,false);
+            }
         }
 
 
@@ -143,7 +135,6 @@ module TSOS {
             //get op code from code at position program counter
             //this.op=this.mmu.mem.memory[this.pc];
             //check if the process is violating its memory boundaries
-           // this.checkBounds(this.PC+this.currentProgram.segment.offset);
 
             _MemoryAccessor.setMAR(this.PC+this.currentProgram.segment.offset);
             _MemoryAccessor.read();
@@ -168,9 +159,6 @@ module TSOS {
 
         }
         public decode1(){
-            //check if the process is violating its memory boundaries
-           // this.checkBounds(this.PC+this.currentProgram.segment.offset);
-
             if(this.IR=="AD" || this.IR=="8D" || this.IR=="6D" || this.IR=="AE" || this.IR=="AC" || this.IR=="EC" || this.IR=="EE"){
                 //this.mmu.setHOB(this.mmu.mem.memory[this.pc]);
                 _MemoryAccessor.setMAR(this.PC+this.currentProgram.segment.offset);
@@ -188,8 +176,7 @@ module TSOS {
         }
 
         public decode2(){
-            //check if the process is violating its memory boundaries
-          //  this.checkBounds(this.PC+this.currentProgram.segment.offset);
+
 
             //this.mmu.setLOB(this.mmu.mem.memory[this.pc]);
             _MemoryAccessor.setMAR(this.PC+this.currentProgram.segment.offset);
@@ -200,7 +187,7 @@ module TSOS {
 
         public execute1(){
             //check if the process is violating its memory boundaries
-         //   this.checkBounds(this.PC+this.currentProgram.segment.offset);
+            //this.checkBoundsPC();
 
             //A9 - Load Accumulator with a Constant - 4 CPU Cycles
             if(this.IR=="A9"){
@@ -276,49 +263,65 @@ module TSOS {
 
             //AD - Load Accumulator from Memory - 5 Cycles
             if(this.IR=="AD"){
-                let adr=this.hexValue(_MemoryAccessor.getLOB(),2).concat(this.hexValue(_MemoryAccessor.getHOB(),2));
-                let a =parseInt(adr, 16)-1;
-              //  this.checkBounds(a+this.currentProgram.segment.offset);
-                _MemoryAccessor.setMAR(a+this.currentProgram.segment.offset);
-                _MemoryAccessor.read();
-                //let num = this.checkComp(_MemoryAccessor.getMDR());
-                let num =_MemoryAccessor.getMDR();
-                this.Acc =num;
-                this.PC++;
-                this.updateCurrent();
-                this.step=1;
+                let a=this.hexValue(_MemoryAccessor.getLOB(),2).concat(this.hexValue(_MemoryAccessor.getHOB(),2));
+                let adr =parseInt(a, 16)-1;
+                if(adr>255|| adr<0){
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
+                    _Scheduler.programEnd(this.currentProgram,false);
+                }
+                else {
+                    _MemoryAccessor.setMAR(adr + this.currentProgram.segment.offset);
+                    _MemoryAccessor.read();
+                    //let num = this.checkComp(_MemoryAccessor.getMDR());
+                    let num = _MemoryAccessor.getMDR();
+                    this.Acc = num;
+                    this.PC++;
+                    this.updateCurrent();
+                    this.step = 1;
+                }
             }
 
             //AE - Load X register from Memory - 5 Cycles
             if(this.IR=="AE"){
                 let adr=this.hexValue(_MemoryAccessor.getLOB(),2).concat(this.hexValue(_MemoryAccessor.getHOB(),2));
-              //  this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.read();
-                //let num = this.checkComp(_MemoryAccessor.getMDR());
-                let num =_MemoryAccessor.getMDR();
-                this.setXreg(num);
-                //this.setXreg(this.mmu.mem.memory[parseInt(adr,16)-1]);
-                this.PC++;
-                this.updateCurrent();
-                this.step=1;
+                if(((parseInt(adr,16)-1))>255 || ((parseInt(adr,16)-1))<0){
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
+                    _Scheduler.programEnd(this.currentProgram,false);
+                }
+                else {
+                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                    _MemoryAccessor.read();
+                    //let num = this.checkComp(_MemoryAccessor.getMDR());
+                    let num = _MemoryAccessor.getMDR();
+                    this.setXreg(num);
+                    //this.setXreg(this.mmu.mem.memory[parseInt(adr,16)-1]);
+                    this.PC++;
+                    this.updateCurrent();
+                    this.step = 1;
+                }
             }
 
             //AC - Load Y register from Memory - 5 Cycles
             if(this.IR=="AC"){
                 let adr=this.hexValue(_MemoryAccessor.getLOB(),2).concat(this.hexValue(_MemoryAccessor.getHOB(),2));
             //    this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.read();
-                //let num = this.checkComp(_MemoryAccessor.getMDR());
+                if(((parseInt(adr,16)-1))>255|| ((parseInt(adr,16)-1))<0){
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
+                    _Scheduler.programEnd(this.currentProgram,false);
+                }
+                else {
+                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                    _MemoryAccessor.read();
+                    //let num = this.checkComp(_MemoryAccessor.getMDR());
 
-                let num =_MemoryAccessor.getMDR();
+                    let num = _MemoryAccessor.getMDR();
 
-                this.setYreg(num);
-                //this.setYreg(this.mmu.mem.memory[parseInt(adr,16)-1]);
-                this.PC++;
-                this.updateCurrent();
-                this.step=1;
+                    this.setYreg(num);
+                    //this.setYreg(this.mmu.mem.memory[parseInt(adr,16)-1]);
+                    this.PC++;
+                    this.updateCurrent();
+                    this.step = 1;
+                }
             }
 
             //AA - Load X register from Accumulator - 4 Cycles
@@ -343,15 +346,20 @@ module TSOS {
                 let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr=a2.concat(a1);
              //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);//+this.currentProgram.segment.offset
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.setMDR(this.Acc);
-                _MemoryAccessor.write();
-                //this.mmu.mem.memory[parseInt(adr,16)-1]=this.acc;
-                this.PC++;
-                this.updateCurrent();
-                this.step=1;
-                TSOS.Control.UpdateMemDisplay();
-
+                if(((parseInt(adr,16)-1))>255 || ((parseInt(adr,16)-1))<0){
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
+                    _Scheduler.programEnd(this.currentProgram,false);
+                }
+                else {
+                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                    _MemoryAccessor.setMDR(this.Acc);
+                    _MemoryAccessor.write();
+                    //this.mmu.mem.memory[parseInt(adr,16)-1]=this.acc;
+                    this.PC++;
+                    this.updateCurrent();
+                    this.step = 1;
+                    TSOS.Control.UpdateMemDisplay();
+                }
             }
 
             //6D - ADD - 5 Cycles
@@ -360,16 +368,21 @@ module TSOS {
                 let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr=a2.concat(a1);
              //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.read();
-                let num = this.checkComp(_MemoryAccessor.getMDR());
-                //let num = this.mmu.mem.memory[parseInt(adr,16)-1];
-                //num=this.mmu.getMDR();
-                this.Acc =this.Acc +num;
-                this.PC++;
-                this.updateCurrent();
-                this.step=1;
-
+                if(((parseInt(adr,16)-1))>255 || ((parseInt(adr,16)-1))<0){
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
+                    _Scheduler.programEnd(this.currentProgram,false);
+                }
+                else {
+                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                    _MemoryAccessor.read();
+                    let num = this.checkComp(_MemoryAccessor.getMDR());
+                    //let num = this.mmu.mem.memory[parseInt(adr,16)-1];
+                    //num=this.mmu.getMDR();
+                    this.Acc = this.Acc + num;
+                    this.PC++;
+                    this.updateCurrent();
+                    this.step = 1;
+                }
             }
 
             //EC - Compares a byte in Memory to X register - 5 Cycles
@@ -378,20 +391,25 @@ module TSOS {
                 let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr=a2.concat(a1);
              //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.read();
-                let byte=_MemoryAccessor.getMDR();
-                //let byte = this.mmu.mem.memory[parseInt(adr,16)-1];
-                let checkX = this.getXreg();
-                if(byte==checkX){
-                    this.zFlag=1;
+                if(((parseInt(adr,16)-1))>255|| ((parseInt(adr,16)-1))<0){
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
+                    _Scheduler.programEnd(this.currentProgram,false);
                 }
-                else{
-                    this.zFlag=0;
+                else {
+                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                    _MemoryAccessor.read();
+                    let byte = _MemoryAccessor.getMDR();
+                    //let byte = this.mmu.mem.memory[parseInt(adr,16)-1];
+                    let checkX = this.getXreg();
+                    if (byte == checkX) {
+                        this.zFlag = 1;
+                    } else {
+                        this.zFlag = 0;
+                    }
+                    this.PC++;
+                    this.updateCurrent();
+                    this.step = 1;
                 }
-                this.PC++;
-                this.updateCurrent();
-                this.step=1;
             }
 
             //8A - Load Accumulator from X register - 4 Cycles
@@ -422,14 +440,20 @@ module TSOS {
                 let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr=a2.concat(a1);
             //    this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);//+this.currentProgram.segment.offset
-                _MemoryAccessor.setMAR(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.read();
-                //let num = this.checkComp(_MemoryAccessor.getMDR());
-                let num = _MemoryAccessor.getMDR();
-                this.Acc =num;
-                this.updateCurrent();
-                //this.acc=this.mmu.mem.memory[parseInt(adr,16)-1];
-                this.step=5;
+                if(((parseInt(adr,16)-1))>255 || ((parseInt(adr,16)-1))<0){
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
+                    _Scheduler.programEnd(this.currentProgram,false);
+                }
+                else {
+                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                    _MemoryAccessor.read();
+                    //let num = this.checkComp(_MemoryAccessor.getMDR());
+                    let num = _MemoryAccessor.getMDR();
+                    this.Acc = num;
+                    this.updateCurrent();
+                    //this.acc=this.mmu.mem.memory[parseInt(adr,16)-1];
+                    this.step = 5;
+                }
             }
 
             //00 - Break/Stop System
@@ -548,8 +572,10 @@ module TSOS {
            // if(this.PC>this.currentProgram.End || this.PC < this.currentProgram.Start){
             //    this.kill();
           //  }
-            //this.checkBounds(this.PC+this.currentProgram.segment.offset);
-
+            if(this.PC>255 || this.PC<0){
+                _StdOut.putText("Error: PC Invalid! Prepare for Neurotoxin!");
+                this.step=7;
+            }
             //Fetch
             if(this.step==1){
                 //Turnaround and Wait Time
