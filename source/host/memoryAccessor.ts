@@ -68,6 +68,7 @@ module TSOS{
             _MemoryManager.UpdateValid(segment);
 
         }
+
         public clearMem(){
             _CPU.killAll();
             for(let i=0;i<767;i++){

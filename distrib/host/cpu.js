@@ -225,7 +225,7 @@ var TSOS;
                 let a = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
                 let adr = parseInt(a, 16) - 1;
                 if (adr > 255 || adr < 0) {
-                    _StdOut.putText("Error: Memory Boundary Infraction! Prepare for Neurotoxin!");
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
                     _Scheduler.programEnd(this.currentProgram, false);
                 }
                 else {
@@ -243,7 +243,7 @@ var TSOS;
             if (this.IR == "AE") {
                 let adr = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
                 if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Boundary Infraction! Prepare for Neurotoxin!");
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
                     _Scheduler.programEnd(this.currentProgram, false);
                 }
                 else {
@@ -263,7 +263,7 @@ var TSOS;
                 let adr = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
                 //    this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Boundary Infraction! Prepare for Neurotoxin!");
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
                     _Scheduler.programEnd(this.currentProgram, false);
                 }
                 else {
@@ -299,7 +299,7 @@ var TSOS;
                 let adr = a2.concat(a1);
                 //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);//+this.currentProgram.segment.offset
                 if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Boundary Infraction! Prepare for Neurotoxin!");
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
                     _Scheduler.programEnd(this.currentProgram, false);
                 }
                 else {
@@ -320,7 +320,7 @@ var TSOS;
                 let adr = a2.concat(a1);
                 //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Boundary Infraction! Prepare for Neurotoxin!");
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
                     _Scheduler.programEnd(this.currentProgram, false);
                 }
                 else {
@@ -342,7 +342,7 @@ var TSOS;
                 let adr = a2.concat(a1);
                 //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
                 if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Boundary Infraction! Prepare for Neurotoxin!");
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
                     _Scheduler.programEnd(this.currentProgram, false);
                 }
                 else {
@@ -387,7 +387,7 @@ var TSOS;
                 let adr = a2.concat(a1);
                 //    this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);//+this.currentProgram.segment.offset
                 if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Boundary Infraction! Prepare for Neurotoxin!");
+                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
                     _Scheduler.programEnd(this.currentProgram, false);
                 }
                 else {
@@ -502,7 +502,7 @@ var TSOS;
             //    this.kill();
             //  }
             if (this.PC > 255 || this.PC < 0) {
-                _StdOut.putText("Error: PC Boundary Invalid! Prepare for Neurotoxin!");
+                _StdOut.putText("Error: PC Invalid! Prepare for Neurotoxin!");
                 this.step = 7;
             }
             //Fetch

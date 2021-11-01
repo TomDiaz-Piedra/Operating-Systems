@@ -45,6 +45,9 @@ var TSOS;
             //Quantum
             sc = new TSOS.ShellCommand(this.shellQuantum, "quantum", "- Change round robin quantum.");
             this.commandList[this.commandList.length] = sc;
+            //Process State
+            sc = new TSOS.ShellCommand(this.shellPS, "ps", "- Display all Process and their states.");
+            this.commandList[this.commandList.length] = sc;
             //status
             sc = new TSOS.ShellCommand(this.shellStatus, "status", "- Changes status message to user input");
             this.commandList[this.commandList.length] = sc;
@@ -323,15 +326,28 @@ var TSOS;
             }
             // _StdOut.advanceLine();
         }
+        shellPS() {
+            let size = residentlist.length;
+            if (size == 0) {
+                _StdOut.putText("No Processes!");
+            }
+            else if (size > 0) {
+                for (let i = 0; i < residentlist.length; i++) {
+                    _StdOut.putText("PID: " + residentlist[i].pid + " State: " + residentlist[i].state);
+                    _StdOut.advanceLine();
+                    _StdOut.putText("----------------------------------");
+                    _StdOut.advanceLine();
+                }
+            }
+        }
         shellKillAll(args) {
-            //_CPU.killAll();
             _MemoryAccessor.clearMem();
         }
         shellClearMem(args) {
             _MemoryAccessor.clearMem();
         }
         shellQuantum(args) {
-            if (args <= 0 || args instanceof String) {
+            if (args <= 0 || isNaN(args)) {
                 _StdOut.putText("Invalid Quantum!");
             }
             else {
