@@ -2,7 +2,6 @@ var TSOS;
 (function (TSOS) {
     class Dispatcher {
         contextSwitch() {
-            _Kernel.krnTrace('Context Switch');
             this.saveState();
             this.loadNew();
         }

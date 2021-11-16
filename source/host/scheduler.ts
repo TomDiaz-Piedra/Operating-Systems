@@ -27,7 +27,9 @@ module TSOS{
                 }
                 //If there are more programs in the readyqueue we will perform a context switch
                 else {
-                    _Dispatcher.contextSwitch();
+                    _KernelInterruptQueue.enqueue(new TSOS.Interrupt(CONTEXT_SWITCH, [0]));
+                    //_Dispatcher.contextSwitch();
+
                 }
             }
            // }
@@ -37,8 +39,13 @@ module TSOS{
 
             //If the process is still running, but its quantum has run out we perform a context switch
             if(_CPU.currentProgram.quanta>=Quantum){
-                _Dispatcher.contextSwitch();
+                //_Dispatcher.contextSwitch();
+                //_CPU.isExecuting=false;
+                _KernelInterruptQueue.enqueue(new TSOS.Interrupt(CONTEXT_SWITCH, [0]));
+                return true;
+
             }
+            return false;
         }
 
     }

@@ -2,7 +2,6 @@ module TSOS{
     export class Dispatcher{
 
         public contextSwitch() {
-            _Kernel.krnTrace('Context Switch');
             this.saveState();
             this.loadNew();
         }

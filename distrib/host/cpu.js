@@ -60,14 +60,16 @@ var TSOS;
         }
         //Terminates current program in CPU
         kill() {
-            this.programEnd();
+            //this.programEnd();
+            _KernelInterruptQueue.enqueue(new TSOS.Interrupt(PROGRAM_END, [this.currentProgram, false]));
         }
         killAll() {
             this.kill();
             while (!readyqueue.isEmpty()) {
                 let killedProg = readyqueue.dequeue();
                 this.currentProgram = killedProg;
-                this.programEnd();
+                //this.programEnd();
+                _KernelInterruptQueue.enqueue(new TSOS.Interrupt(PROGRAM_END, [this.currentProgram, false]));
             }
             // _MemoryAccessor.clearMem();
         }
@@ -76,7 +78,8 @@ var TSOS;
             for (let i = 0; i < readyqueue.getSize(); i++) {
                 let temp = readyqueue.dequeue();
                 if (temp.pid = pid) {
-                    _Scheduler.programEnd(temp, true);
+                    //_Scheduler.programEnd(temp,true);
+                    _KernelInterruptQueue.enqueue(new TSOS.Interrupt(CONTEXT_SWITCH, [this.currentProgram, true]));
                 }
                 else {
                     readyqueue.enqueue(temp);
@@ -156,8 +159,6 @@ var TSOS;
             this.step = 4;
         }
         execute1() {
-            //check if the process is violating its memory boundaries
-            //this.checkBoundsPC();
             //A9 - Load Accumulator with a Constant - 4 CPU Cycles
             if (this.IR == "A9") {
                 //this.acc=this.mmu.mem.memory[this.pc];
@@ -224,11 +225,13 @@ var TSOS;
             if (this.IR == "AD") {
                 let a = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
                 let adr = parseInt(a, 16) - 1;
-                if (adr > 255 || adr < 0) {
-                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
-                    _Scheduler.programEnd(this.currentProgram, false);
-                }
-                else {
+                //If the memory boundaries are not violated, the current operation will run as normal
+                //If the bounds are violated, the operation will not take place
+                //Had to do it this way because without the IF statement, it would cancel the process properly if the bounds were violated, but still attempt to finish
+                //the operation(ex. loading something from memory to the accumulator would set the accumulator to undefined as the memory in the segment has been wiped)
+                //Even if it was not set up to reset the memory of a terminated process to all Ox00s it would instead end up violating the memory bounds anyways
+                let valid = _MemoryAccessor.checkBounds(adr);
+                if (valid) {
                     _MemoryAccessor.setMAR(adr + this.currentProgram.segment.offset);
                     _MemoryAccessor.read();
                     //let num = this.checkComp(_MemoryAccessor.getMDR());
@@ -238,44 +241,59 @@ var TSOS;
                     this.updateCurrent();
                     this.step = 1;
                 }
+                else {
+                    //We do nothing here as boundaries were violated
+                }
             }
             //AE - Load X register from Memory - 5 Cycles
             if (this.IR == "AE") {
-                let adr = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
-                if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
-                    _Scheduler.programEnd(this.currentProgram, false);
-                }
-                else {
-                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
+                let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
+                let adr = a2.concat(a1);
+                let a = parseInt(adr, 16) - 1;
+                //If the memory boundaries are not violated, the current operation will run as normal
+                //If the bounds are violated, the operation will not take place
+                //Had to do it this way because without the IF statement, it would cancel the process properly if the bounds were violated, but still attempt to finish
+                //the operation(ex. loading something from memory to the accumulator would set the accumulator to undefined as the memory in the segment has been wiped)
+                //Even if it was not set up to reset the memory of a terminated process to all Ox00s it would instead end up violating the memory bounds anyways
+                let valid = _MemoryAccessor.checkBounds(a);
+                if (valid) {
+                    _MemoryAccessor.setMAR(a + this.currentProgram.segment.offset);
                     _MemoryAccessor.read();
                     //let num = this.checkComp(_MemoryAccessor.getMDR());
                     let num = _MemoryAccessor.getMDR();
                     this.setXreg(num);
-                    //this.setXreg(this.mmu.mem.memory[parseInt(adr,16)-1]);
                     this.PC++;
                     this.updateCurrent();
                     this.step = 1;
+                }
+                else {
+                    //We do noting as boundaries were violated
                 }
             }
             //AC - Load Y register from Memory - 5 Cycles
             if (this.IR == "AC") {
-                let adr = this.hexValue(_MemoryAccessor.getLOB(), 2).concat(this.hexValue(_MemoryAccessor.getHOB(), 2));
-                //    this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
-                    _Scheduler.programEnd(this.currentProgram, false);
-                }
-                else {
-                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
+                let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
+                let adr = a2.concat(a1);
+                let a = parseInt(adr, 16) - 1;
+                //If the memory boundaries are not violated, the current operation will run as normal
+                //If the bounds are violated, the operation will not take place
+                //Had to do it this way because without the IF statement, it would cancel the process properly if the bounds were violated, but still attempt to finish
+                //the operation(ex. loading something from memory to the accumulator would set the accumulator to undefined as the memory in the segment has been wiped)
+                //Even if it was not set up to reset the memory of a terminated process to all Ox00s it would instead end up violating the memory bounds anyways
+                let valid = _MemoryAccessor.checkBounds(a);
+                if (valid) {
+                    _MemoryAccessor.setMAR(a + this.currentProgram.segment.offset);
                     _MemoryAccessor.read();
-                    //let num = this.checkComp(_MemoryAccessor.getMDR());
                     let num = _MemoryAccessor.getMDR();
                     this.setYreg(num);
-                    //this.setYreg(this.mmu.mem.memory[parseInt(adr,16)-1]);
                     this.PC++;
                     this.updateCurrent();
                     this.step = 1;
+                }
+                else {
+                    //We do nothing as the bounds were violated
                 }
             }
             //AA - Load X register from Accumulator - 4 Cycles
@@ -297,20 +315,23 @@ var TSOS;
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
-                //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);//+this.currentProgram.segment.offset
-                if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
-                    _Scheduler.programEnd(this.currentProgram, false);
-                }
-                else {
-                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                let a = parseInt(adr, 16) - 1;
+                //If the memory boundaries are not violated, the current operation will run as normal
+                //If the bounds are violated, the operation will not take place
+                //Had to do it this way because without the IF statement, it would cancel the process properly if the bounds were violated, but still attempt to finish
+                //the operation(ex. loading something from memory to the accumulator would set the accumulator to undefined as the memory in the segment has been wiped)
+                //Even if it was not set up to reset the memory of a terminated process to all Ox00s it would instead end up violating the memory bounds anyways
+                let valid = _MemoryAccessor.checkBounds(a);
+                if (valid) {
+                    _MemoryAccessor.setMAR(a + this.currentProgram.segment.offset);
                     _MemoryAccessor.setMDR(this.Acc);
                     _MemoryAccessor.write();
-                    //this.mmu.mem.memory[parseInt(adr,16)-1]=this.acc;
                     this.PC++;
                     this.updateCurrent();
                     this.step = 1;
                     TSOS.Control.UpdateMemDisplay();
+                }
+                else {
                 }
             }
             //6D - ADD - 5 Cycles
@@ -318,13 +339,15 @@ var TSOS;
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
-                //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
-                    _Scheduler.programEnd(this.currentProgram, false);
-                }
-                else {
-                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                let a = parseInt(adr, 16) - 1;
+                //If the memory boundaries are not violated, the current operation will run as normal
+                //If the bounds are violated, the operation will not take place
+                //Had to do it this way because without the IF statement, it would cancel the process properly if the bounds were violated, but still attempt to finish
+                //the operation(ex. loading something from memory to the accumulator would set the accumulator to undefined as the memory in the segment has been wiped)
+                //Even if it was not set up to reset the memory of a terminated process to all Ox00s it would instead end up violating the memory bounds anyways
+                let valid = _MemoryAccessor.checkBounds(adr);
+                if (valid) {
+                    _MemoryAccessor.setMAR(a + this.currentProgram.segment.offset);
                     _MemoryAccessor.read();
                     let num = this.checkComp(_MemoryAccessor.getMDR());
                     //let num = this.mmu.mem.memory[parseInt(adr,16)-1];
@@ -334,22 +357,26 @@ var TSOS;
                     this.updateCurrent();
                     this.step = 1;
                 }
+                else {
+                    //We do nothing here as boundaries were violated
+                }
             }
             //EC - Compares a byte in Memory to X register - 5 Cycles
             if (this.IR == "EC") {
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
-                //   this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
-                    _Scheduler.programEnd(this.currentProgram, false);
-                }
-                else {
-                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                let a = parseInt(adr, 16) - 1;
+                //If the memory boundaries are not violated, the current operation will run as normal
+                //If the bounds are violated, the operation will not take place
+                //Had to do it this way because without the IF statement, it would cancel the process properly if the bounds were violated, but still attempt to finish
+                //the operation(ex. loading something from memory to the accumulator would set the accumulator to undefined as the memory in the segment has been wiped)
+                //Even if it was not set up to reset the memory of a terminated process to all Ox00s it would instead end up violating the memory bounds anyways
+                let valid = _MemoryAccessor.checkBounds(adr);
+                if (valid) {
+                    _MemoryAccessor.setMAR(a + this.currentProgram.segment.offset);
                     _MemoryAccessor.read();
                     let byte = _MemoryAccessor.getMDR();
-                    //let byte = this.mmu.mem.memory[parseInt(adr,16)-1];
                     let checkX = this.getXreg();
                     if (byte == checkX) {
                         this.zFlag = 1;
@@ -360,6 +387,9 @@ var TSOS;
                     this.PC++;
                     this.updateCurrent();
                     this.step = 1;
+                }
+                else {
+                    //We do noting here as boundaries were violated
                 }
             }
             //8A - Load Accumulator from X register - 4 Cycles
@@ -385,28 +415,33 @@ var TSOS;
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
-                //    this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);//+this.currentProgram.segment.offset
-                if (((parseInt(adr, 16) - 1)) > 255 || ((parseInt(adr, 16) - 1)) < 0) {
-                    _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin!");
-                    _Scheduler.programEnd(this.currentProgram, false);
+                let a = parseInt(adr, 16);
+                //If the memory boundaries are not violated, the current operation will run as normal
+                //If the bounds are violated, the operation will not take place
+                //Had to do it this way because without the IF statement, it would cancel the process properly if the bounds were violated, but still attempt to finish
+                //the operation(ex. loading something from memory to the accumulator would set the accumulator to undefined as the memory in the segment has been wiped)
+                //Even if it was not set up to reset the memory of a terminated process to all Ox00s it would instead end up violating the memory bounds anyways
+                let valid = _MemoryAccessor.checkBounds(a);
+                if (valid) {
+                    _MemoryAccessor.setMAR(a + this.currentProgram.segment.offset);
+                    //this.tempAdr=a+this.currentProgram.segment.offset;
+                    _MemoryAccessor.read();
+                    let num = _MemoryAccessor.getMDR();
+                    this.Acc = num + 1;
+                    _MemoryAccessor.setMDR(this.Acc);
+                    _MemoryAccessor.write();
+                    //_StdOut.putText("MDR: "+_MemoryAccessor.getMDR());
+                    this.updateCurrent();
+                    //this.step = 5;
+                    this.PC++;
+                    this.step = 1;
                 }
                 else {
-                    _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
-                    _MemoryAccessor.read();
-                    //let num = this.checkComp(_MemoryAccessor.getMDR());
-                    let num = _MemoryAccessor.getMDR();
-                    this.Acc = num;
-                    this.updateCurrent();
-                    //this.acc=this.mmu.mem.memory[parseInt(adr,16)-1];
-                    this.step = 5;
+                    //We do nothing as the boundaries were violated
                 }
             }
             //00 - Break/Stop System
             if (this.IR == "00") {
-                //this.currentProgram.state="terminated";
-                //_MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
-                //this.currentProgram.state="terminated";
-                //this.updateCurrent();
                 this.step = 7;
             }
             //FF - System Call
@@ -484,10 +519,10 @@ var TSOS;
                 let a1 = this.hexValue(_MemoryAccessor.getHOB(), 2);
                 let a2 = this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr = a2.concat(a1);
-                //this.checkBounds(parseInt(adr,16)-1+this.currentProgram.segment.offset);
-                _MemoryAccessor.setMAR(parseInt(adr, 16) - 1 + this.currentProgram.segment.offset);
+                _MemoryAccessor.setMAR(parseInt(adr, 16) + this.currentProgram.segment.offset);
                 _MemoryAccessor.setMDR(this.Acc);
                 _MemoryAccessor.write();
+                _StdOut.putText("MAR: " + _MemoryAccessor.getMAR() + " MDR: " + _MemoryAccessor.getMDR());
                 //this.mmu.mem.memory[parseInt(adr,16)-1]=this.acc;
                 this.PC++;
                 this.updateCurrent();
@@ -507,22 +542,26 @@ var TSOS;
             }
             //Fetch
             if (this.step == 1) {
-                //Turnaround and Wait Time
-                this.currentProgram.turnaround++;
-                for (let i = 0; i < readyqueue.getSize(); i++) {
-                    let prog = readyqueue.dequeue();
-                    prog.wait++;
-                    prog.turnaround++;
-                    readyqueue.enqueue(prog);
-                }
                 //Call the scheduler and check whether or not the quantum has been used up
                 //if so, contact dispatcher to start a context switch
                 //go forth with fetch after switch(if switched)
-                _Scheduler.roundRobin();
-                this.fetch();
-                //after we have fetched we will increment the programs quantum.
-                //we do it afterwards to ensure the program gets the correct amount of runs through
-                this.currentProgram.quanta++;
+                if (_Scheduler.roundRobin()) {
+                    //Do nothing
+                }
+                else {
+                    //Turnaround and Wait Time
+                    this.currentProgram.turnaround++;
+                    for (let i = 0; i < readyqueue.getSize(); i++) {
+                        let prog = readyqueue.dequeue();
+                        prog.wait++;
+                        prog.turnaround++;
+                        readyqueue.enqueue(prog);
+                    }
+                    this.fetch();
+                    //after we have fetched we will increment the programs quantum.
+                    //we do it afterwards to ensure the program gets the correct amount of runs through
+                    this.currentProgram.quanta++;
+                }
             }
             //Decode1
             else if (this.step == 2) {
@@ -546,7 +585,8 @@ var TSOS;
             }
             else if (this.step == 7) {
                 //this.currentProgram.state='terminated';
-                _Scheduler.programEnd(this.currentProgram, false);
+                //_Scheduler.programEnd(this.currentProgram,false);
+                _KernelInterruptQueue.enqueue(new TSOS.Interrupt(PROGRAM_END, [this.currentProgram, false]));
                 //this.programEnd();
             }
             TSOS.Control.updatePCB(this.currentProgram);

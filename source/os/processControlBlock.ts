@@ -15,10 +15,9 @@ module TSOS{
         public quanta;
         public turnaround;
         public wait;
-        //public segmentNum;
-        //public base;
-        //public limit;
-        //public offset;
+        public base;
+        public limit;
+        public offset;
 
 
 
@@ -37,12 +36,16 @@ module TSOS{
             this.quanta=0;
             this.turnaround=0;
             this.wait=0;
-            //this.base=this.segment.Start;
-            //this.limit=this.segment.End;
-            //this.offset=this.segment.offset;
-            //this.segmentNum=this.segment.Number;
+            this.base;
+            this.limit;
+            this.offset;
 
 
+        }
+        public init() {
+            this.base = this.segment.Start;
+            this.limit = this.segment.End;
+            this.offset=this.segment.offset;
         }
 
         getPCB(pid:number){

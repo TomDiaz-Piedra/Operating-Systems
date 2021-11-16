@@ -323,13 +323,21 @@ module TSOS {
 //change to get correct segment
                 let seg=_MemoryManager.getValid();
                 seg.isEmpty=false;
-                let adr = seg.Start;
+                //let adr = seg.Start;
+                let adr = 0;
                 let test:number = val.length;
                 let start=0;
                 let end=2;
+
+                //Creates a new PCB and assigns its segment to the first available
+                //The base, limit, and offset registers are then initialized
+                let pcb = new TSOS.processControlBlock();
+                pcb.segment=seg;
+                pcb.init();
+
                 while (start<test) {
                     let byte = val.substring(start,end);
-                    _MemoryAccessor.setMAR(adr);
+                    _MemoryAccessor.setMAR(adr+pcb.segment.offset);
 
                     _MemoryAccessor.setMDR(parseInt(byte,16));
                     _MemoryAccessor.write();
@@ -339,18 +347,33 @@ module TSOS {
                 }
                 TSOS.Control.UpdateMemDisplay();
 
-                let pcb = new TSOS.processControlBlock();
-                //pcb.pc=seg.Start;
-                pcb.segment=seg;
+
+
+                //Enqueue the new PCB onto the residentlist and residentqueue
+                //The list is a record of all PCB's past and present
+                //The queue are the current programs that are loaded into memory, but are not running
                 residentqueue.enqueue(pcb);
                 residentlist.push(pcb);
                 TSOS.Control.addPcb(pcb);
-                //_StdOut.putText("Valid: PID = "+pcb.pid);
                 _StdOut.putText("Valid: PID = "+pcb.pid);
-
                 _NextAvailablePID++;
             } else {
                 if(!validSpace){
+                    //If no space:
+                    //Load program into Disk, do not give it a segment
+                    //When we swap a process from memory to disk:
+                    // 1. Load it into memory
+                    // 2. Free up the memory segment by Clearing it completely(Only after saving it onto the disk!)
+                    //When we put the process in the Disk onto the main memory:
+                    // IF THE PROCESS WAS NEVER LOADED ONTO MEMORY
+                    // 1. Give the process the first available segment
+                    // 2. Load the process into said segment(Using a swapper method that can load with params)
+                    // IF THE PROCESS WAS PREVIOUSLY LOADED
+                    // 1. WIPE ITS OLD SEGMENT(if not already done)
+                    // 2. Save Process whose quantum ran out onto disk
+                    // 3. Clear segment, and assign it to the process going back on memory
+                    // 4. load the process into the segment in memory
+
                     _StdOut.putText("No Space Left in Memory!!!");
                 }
                 else {
@@ -363,8 +386,7 @@ module TSOS {
 
         }
         public shellRun(args){
-            //_StdOut.putText(_Memory.mem[4].toString());
-            //_StdOut.putText(_Memory.mem[5].toString());
+
             var found=false;
 
             for(let i=0;i<residentqueue.getSize();i++) {

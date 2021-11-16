@@ -7,6 +7,8 @@ var TSOS;
         constructor(irq, params) {
             this.irq = irq;
             this.params = params;
+            this.irq = irq;
+            this.params = params;
         }
     }
     TSOS.Interrupt = Interrupt;

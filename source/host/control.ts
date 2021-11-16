@@ -116,17 +116,17 @@ module TSOS {
             let state = r.cells[1];
             state.innerHTML=pcb.state;
             let pc = r.cells[2];
-            pc.innerHTML=pcb.pc;
+            pc.innerHTML=pcb.pc.toString(16).toUpperCase();
             let ir = r.cells[3];
             ir.innerHTML=pcb.IR;
             let acc = r.cells[4];
-            acc.innerHTML=pcb.acc;
+            acc.innerHTML=pcb.acc.toString(16).toUpperCase();
             let xreg = r.cells[5];
-            xreg.innerHTML=pcb.xReg;
+            xreg.innerHTML=pcb.xReg.toString(16).toUpperCase();
             let yreg = r.cells[6];
-            yreg.innerHTML=pcb.yReg;
+            yreg.innerHTML=pcb.yReg.toString(16).toUpperCase();
             let zflag = r.cells[7];
-            zflag.innerHTML=pcb.zReg;
+            zflag.innerHTML=pcb.zReg.toString(16).toUpperCase();
 
         }
 
