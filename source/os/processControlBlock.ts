@@ -18,6 +18,7 @@ module TSOS{
         public base;
         public limit;
         public offset;
+        public location;
 
 
 
@@ -39,6 +40,7 @@ module TSOS{
             this.base;
             this.limit;
             this.offset;
+
 
 
         }

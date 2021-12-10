@@ -36,13 +36,15 @@ var _MemoryManager: TSOS.MemoryManager;
 var _ProcessControlBlock: TSOS.processControlBlock;
 var _Scheduler: TSOS.Scheduler;
 var _Dispatcher: TSOS.Dispatcher;
+var _Disk: TSOS.Disk;
+var _krnDiskDriver: TSOS.DeviceDriverDisk;
 var _NextAvailablePID = 0;
+var isFormatted = false;
 var readyqueue:TSOS.Queue;
 var residentqueue:TSOS.Queue;
 var residentlist=[];
 var SEGMENT_LENGTH = 512;
 var Quantum = 6;
-var SEG_NUM = 3;
 var _OSclock: number = 0;  // Page 23.
 
 var _Mode: number = 0;     // (currently unused)  0 = Kernel Mode, 1 = User Mode.  See page 21.
@@ -76,6 +78,7 @@ var _SarcasticMode: boolean = false;
 
 // Global Device Driver Objects - page 12
 var _krnKeyboardDriver: TSOS.DeviceDriverKeyboard  = null;
+var _krnDiskDriver: TSOS.DeviceDriverDisk = null;
 
 var _hardwareClockID: number = null;
 

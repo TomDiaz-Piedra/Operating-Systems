@@ -186,7 +186,6 @@ module TSOS {
             _CPU.init();       //       There's more to do, like dealing with scheduling and such, but this would be a start. Pretty cool.
             _Memory = new Memory();
             _Memory.init();
-            //Control.memInit();
             _MemoryAccessor = new MemoryAccessor();
             _MemoryManager = new MemoryManager();
             _ProcessControlBlock = new processControlBlock();
@@ -194,6 +193,9 @@ module TSOS {
             residentqueue= new Queue();
             _Scheduler = new Scheduler();
             _Dispatcher = new Dispatcher();
+            _Disk = new Disk();
+            _Disk.init();
+
 
             // ... then set the host clock pulse ...
             _hardwareClockID = setInterval(Devices.hostClockPulse, CPU_CLOCK_INTERVAL);
@@ -253,9 +255,43 @@ module TSOS {
             document.getElementById("cpuZFlag").innerHTML=String(_CPU.currentProgram.zReg);
 
         }
-        public updatePCBDisplay(){
+
+        public static UpdateDiskDisplay(){
+            var diskTable = document.getElementById('diskT') as HTMLTableElement;
+
+            //remove rows?
+            var row = 0;
+            for(let track=0;track<_Disk.tracks;track++){
+                for(let sector=0;sector<_Disk.sectors;sector++){
+                    for(let block=0;block<_Disk.blocks;block++){
+
+                        //make the id in order because I can't trust session storage
+                        //its not in order for some reason so I must do it, uugh whatever
+                        var id = track+":"+sector+":"+block;
+                        var blockData = sessionStorage.getItem(id);
+                        //blockData
+                        var rowData=diskTable.insertRow(row);
+                        row++;
+                        var tsb = rowData.insertCell(0);
+                        tsb.innerHTML=id;
+                        tsb.style.backgroundColor="darkOrange";
+                        //var availB = rowData.insertCell(1);
+                        //availB.innerHTML=;
+                        //var next = rowData.insertCell(2);
+                        //var nextVal=;
+                        //next.innerHTML=nextVal;
+                        var data = rowData.insertCell(1);
+                        data.innerHTML=sessionStorage.getItem(id);
+
+
+
+
+                    }
+                }
+            }
 
         }
+
 
     }
 }

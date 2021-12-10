@@ -29,13 +29,15 @@ var _MemoryManager;
 var _ProcessControlBlock;
 var _Scheduler;
 var _Dispatcher;
+var _Disk;
+var _krnDiskDriver;
 var _NextAvailablePID = 0;
+var isFormatted = false;
 var readyqueue;
 var residentqueue;
 var residentlist = [];
 var SEGMENT_LENGTH = 512;
 var Quantum = 6;
-var SEG_NUM = 3;
 var _OSclock = 0; // Page 23.
 var _Mode = 0; // (currently unused)  0 = Kernel Mode, 1 = User Mode.  See page 21.
 var _Canvas; // Initialized in Control.hostInit().
@@ -59,6 +61,7 @@ var _OsShell;
 var _SarcasticMode = false;
 // Global Device Driver Objects - page 12
 var _krnKeyboardDriver = null;
+var _krnDiskDriver = null;
 var _hardwareClockID = null;
 // For testing (and enrichment)...
 var Glados = null; // This is the function Glados() in glados-ip*.js http://alanclasses.github.io/TSOS/test/ .

@@ -157,7 +157,6 @@ var TSOS;
             _CPU.init(); //       There's more to do, like dealing with scheduling and such, but this would be a start. Pretty cool.
             _Memory = new TSOS.Memory();
             _Memory.init();
-            //Control.memInit();
             _MemoryAccessor = new TSOS.MemoryAccessor();
             _MemoryManager = new TSOS.MemoryManager();
             _ProcessControlBlock = new TSOS.processControlBlock();
@@ -165,6 +164,8 @@ var TSOS;
             residentqueue = new TSOS.Queue();
             _Scheduler = new TSOS.Scheduler();
             _Dispatcher = new TSOS.Dispatcher();
+            _Disk = new TSOS.Disk();
+            _Disk.init();
             // ... then set the host clock pulse ...
             _hardwareClockID = setInterval(TSOS.Devices.hostClockPulse, CPU_CLOCK_INTERVAL);
             // .. and call the OS Kernel Bootstrap routine.
@@ -217,7 +218,33 @@ var TSOS;
             document.getElementById("cpuYREG").innerHTML = String(_CPU.currentProgram.yReg);
             document.getElementById("cpuZFlag").innerHTML = String(_CPU.currentProgram.zReg);
         }
-        updatePCBDisplay() {
+        static UpdateDiskDisplay() {
+            var diskTable = document.getElementById('diskT');
+            //remove rows?
+            var row = 0;
+            for (let track = 0; track < _Disk.tracks; track++) {
+                for (let sector = 0; sector < _Disk.sectors; sector++) {
+                    for (let block = 0; block < _Disk.blocks; block++) {
+                        //make the id in order because I can't trust session storage
+                        //its not in order for some reason so I must do it, uugh whatever
+                        var id = track + ":" + sector + ":" + block;
+                        var blockData = sessionStorage.getItem(id);
+                        //blockData
+                        var rowData = diskTable.insertRow(row);
+                        row++;
+                        var tsb = rowData.insertCell(0);
+                        tsb.innerHTML = id;
+                        tsb.style.backgroundColor = "darkOrange";
+                        //var availB = rowData.insertCell(1);
+                        //availB.innerHTML=;
+                        //var next = rowData.insertCell(2);
+                        //var nextVal=;
+                        //next.innerHTML=nextVal;
+                        var data = rowData.insertCell(1);
+                        data.innerHTML = sessionStorage.getItem(id);
+                    }
+                }
+            }
         }
     }
     TSOS.Control = Control;

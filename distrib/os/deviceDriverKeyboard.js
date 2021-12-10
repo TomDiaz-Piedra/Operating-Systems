@@ -72,13 +72,13 @@ var TSOS;
                             chr = "^";
                             break;
                         case 55:
-                            chr = '&&';
+                            chr = '&';
                             break;
                         case 56:
                             chr = "*";
                             break;
                         case 57:
-                            chr = "((";
+                            chr = "(";
                             break;
                     }
                 }

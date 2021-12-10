@@ -45,6 +45,12 @@ var TSOS;
             //Quantum
             sc = new TSOS.ShellCommand(this.shellQuantum, "quantum", "- Change round robin quantum.");
             this.commandList[this.commandList.length] = sc;
+            //Format
+            sc = new TSOS.ShellCommand(this.shellFormat, "format", "- Format the Disk.");
+            this.commandList[this.commandList.length] = sc;
+            //Create
+            sc = new TSOS.ShellCommand(this.shellCreate, "create", "- Create a file on the disk.");
+            this.commandList[this.commandList.length] = sc;
             //Process State
             sc = new TSOS.ShellCommand(this.shellPS, "ps", "- Display all Process and their states.");
             this.commandList[this.commandList.length] = sc;
@@ -248,6 +254,7 @@ var TSOS;
                 let pcb = new TSOS.processControlBlock();
                 pcb.segment = seg;
                 pcb.init();
+                pcb.location = "Memory";
                 while (start < test) {
                     let byte = val.substring(start, end);
                     _MemoryAccessor.setMAR(adr + pcb.segment.offset);
@@ -369,6 +376,28 @@ var TSOS;
             }
             else {
                 Quantum = args;
+            }
+        }
+        shellFormat(args) {
+            if (!isFormatted) {
+                _krnDiskDriver.format();
+                _StdOut.putText("Format Completed Successfully");
+                isFormatted = true;
+                TSOS.Control.UpdateDiskDisplay();
+            }
+            else {
+                _StdOut.putText("Error: Already Formatted!");
+            }
+        }
+        shellCreate(args) {
+            if (!isFormatted) {
+                _StdOut.putText("Error: Disk Must be Formatted!");
+            }
+            else if (args == "") {
+                _StdOut.putText("Create Requires a File Name! Try Again!");
+            }
+            else if (isFormatted && args != "") {
+                _krnDiskDriver.createFile(args);
             }
         }
         shellCube(args) {

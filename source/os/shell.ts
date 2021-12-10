@@ -73,6 +73,18 @@ module TSOS {
                 "- Change round robin quantum.");
             this.commandList[this.commandList.length] = sc;
 
+            //Format
+            sc = new ShellCommand(this.shellFormat,
+                "format",
+                "- Format the Disk.");
+            this.commandList[this.commandList.length] = sc;
+
+            //Create
+            sc = new ShellCommand(this.shellCreate,
+                "create",
+                "- Create a file on the disk.");
+            this.commandList[this.commandList.length] = sc;
+
             //Process State
             sc = new ShellCommand(this.shellPS,
                 "ps",
@@ -334,6 +346,7 @@ module TSOS {
                 let pcb = new TSOS.processControlBlock();
                 pcb.segment=seg;
                 pcb.init();
+                pcb.location="Memory";
 
                 while (start<test) {
                     let byte = val.substring(start,end);
@@ -474,6 +487,32 @@ module TSOS {
             }
             else {
                 Quantum = args;
+            }
+        }
+
+        public shellFormat(args){
+            if(!isFormatted){
+                _krnDiskDriver.format();
+                _StdOut.putText("Format Completed Successfully");
+                isFormatted=true;
+                TSOS.Control.UpdateDiskDisplay();
+
+            }
+
+            else{
+                _StdOut.putText("Error: Already Formatted!");
+            }
+
+        }
+        public shellCreate(args){
+            if(!isFormatted){
+                _StdOut.putText("Error: Disk Must be Formatted!");
+            }
+            else if(args==""){
+                _StdOut.putText("Create Requires a File Name! Try Again!");
+            }
+            else if(isFormatted && args!=""){
+                _krnDiskDriver.createFile(args);
             }
         }
 
