@@ -85,6 +85,12 @@ module TSOS {
                 "- Create a file on the disk.");
             this.commandList[this.commandList.length] = sc;
 
+            //Write
+            sc = new ShellCommand(this.shellWrite,
+                "write",
+                "- Write into File. Must be within Quotation Marks");
+            this.commandList[this.commandList.length] = sc;
+
             //Process State
             sc = new ShellCommand(this.shellPS,
                 "ps",
@@ -513,6 +519,14 @@ module TSOS {
             }
             else if(isFormatted && args!=""){
                 _krnDiskDriver.createFile(args);
+            }
+        }
+        public shellWrite(args){
+            if(args.length<2 || args.length>2){
+                _StdOut.putText("Missing File name or write data");
+            }
+            else{
+                //do write with filename and data
             }
         }
 

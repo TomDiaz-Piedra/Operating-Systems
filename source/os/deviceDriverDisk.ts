@@ -25,9 +25,13 @@ module TSOS {
             _Disk.init();
         }
 
-        public createFile(name) {
+        public createFile(name:string) {
             var pointerTSB;
-            //check if name is available
+            //check if name is available or too long
+            if(name.length>60){
+                _StdOut.putText("Error: File Name is Too Long!");
+                return;
+            }
             var isNameAvail = this.fileExist(name);
             if (isNameAvail) {
                 //check if there is a valid directory
@@ -77,6 +81,61 @@ module TSOS {
                 //Nothing, the name was taken, so try again, ha ha ha!
                 _StdOut.putText("File "+name+" Already Exists!");
             }
+        }
+        //rolledIn determines if we are writing something from the Write Command or from Rolling In a program from Memory
+        //True if Rolled In from Memory
+        //False if From Write Command in OS
+        public writeFile(filename, data:String,rolledIn:boolean){
+            //Convert filename into Ascii Hex
+            filename = this.asciiConvert(filename);
+
+            //Check if data size is larger than 60 while splitting off the ""
+            if(!rolledIn){
+                data = data.substring(1,data.length-1);
+            }
+            if(data.length>60){
+                let chainNum =Math.floor(data.length/60);
+                //Check if we have as many TSBs available as we need Chains
+                //If so find all pointers, put in array
+            }
+
+
+
+            //If so:
+            //Look for file with name: If exists, grab TSB, If not Display File Not Found Error
+            for(let i=0;i<_Disk.sectors;i++){
+                for(let j=0;j<_Disk.blocks;j++){
+                    var tsb = "0"+":"+i+":"+j;
+                    var block = sessionStorage.getItem(tsb);
+                    if(block[0]=="1"){
+                        let existFileName = block.substring(4);
+                        let checkName=existFileName.split("00");
+                        var oldName = [];
+
+                        for (var x = 0, charsLength = checkName[0].length; x < charsLength; x += 2) {
+                            oldName.push(checkName[0].substring(x, x + 2));
+                        }
+                        let oldStr="";
+                        let newStr="";
+                        for(let z=0;z<oldName.length;z++) {
+                            newStr=newStr.concat(filename[z]);
+                            oldStr=oldStr.concat(oldName[z]);
+
+                        }
+                        newStr=newStr.toUpperCase();
+                        //If names match, we found file. So now we write into it
+                        if(oldStr==newStr){
+                            //Get pointer from Value
+                            //Write into first block
+                            //get next pointer from pointer array
+                            //set the current TSB's pointer to that pointer
+                            //write into next block
+                            //repeat until done, fill last one with 0s as needed
+                        }
+                    }
+                }
+            }
+
         }
 
         public findFileSpace(){
