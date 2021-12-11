@@ -51,6 +51,9 @@ var TSOS;
             //Create
             sc = new TSOS.ShellCommand(this.shellCreate, "create", "- Create a file on the disk.");
             this.commandList[this.commandList.length] = sc;
+            //Write
+            sc = new TSOS.ShellCommand(this.shellWrite, "write", "- Write into File. Must be within Quotation Marks");
+            this.commandList[this.commandList.length] = sc;
             //Process State
             sc = new TSOS.ShellCommand(this.shellPS, "ps", "- Display all Process and their states.");
             this.commandList[this.commandList.length] = sc;
@@ -398,6 +401,18 @@ var TSOS;
             }
             else if (isFormatted && args != "") {
                 _krnDiskDriver.createFile(args);
+            }
+        }
+        shellWrite(args) {
+            if (args.length < 2 || args.length > 2) {
+                _StdOut.putText("Error: Too Many Parameters! Remember a filename and data only. No Spaces Allowed!");
+            }
+            else {
+                let data = args[1];
+                //_StdOut.putText(data);
+                data = data.substring(1, data.length - 1);
+                // _StdOut.putText(data);
+                _krnDiskDriver.writeFile(args[0], args[1]);
             }
         }
         shellCube(args) {

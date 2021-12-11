@@ -82,25 +82,69 @@ module TSOS {
                 _StdOut.putText("File "+name+" Already Exists!");
             }
         }
-        //rolledIn determines if we are writing something from the Write Command or from Rolling In a program from Memory
-        //True if Rolled In from Memory
-        //False if From Write Command in OS
-        public writeFile(filename, data:String,rolledIn:boolean){
+        //Helper Function to get a list of free blocks that we can write into
+        public findAvailTSB(required){
+            required=required-1; //Did this because we already have 1 block to save it into(the block allocated after creating the file)
+            //used to compare to the required amount of blocks
+            var avail=0;
+            //List of TSBs we will use to write the file into the disk, if we have enough room
+            var listOfTSBs = [];
+            //Go through each block starting from 1:0:0 looking for available blocks
+            for(let k = 1;k<_Disk.tracks;k++){
+            for(let i=0;i<_Disk.sectors;i++){
+                for(let j=0;j<_Disk.blocks;j++){
+                    var tsb = k+":"+i+":"+j;
+                    let block = sessionStorage.getItem(tsb);
+                    //If it is available, add it to the listOfTSBs array and add 1 to the available blocks
+                    if(block[0]=="0"){
+                        listOfTSBs.push(tsb);
+                        avail++;
+                    }
+                    //If the available blocks equals the amount required to write into the file, we return the list of pointers
+                    if(avail==required){
+                        listOfTSBs.push("0:0:0");//Put the ending pointer at the end of the array
+                        return listOfTSBs;
+                    }
+                }
+            }
+        }
+            //If the number of available blocks is not enough for the required, we return false
+            if(avail!=required){
+                return false;
+            }
+        }
+
+        public writeFile(filename, str:String){
             //Convert filename into Ascii Hex
+            let asciiData = this.asciiConvert(str);
+            let data="";
+            for(let p=0;p<asciiData.length;p++){
+                data=data.concat(asciiData[p]);
+            }
+            data=data.split(",").join("");
             filename = this.asciiConvert(filename);
+            var listOfPointers;
 
             //Check if data size is larger than 60 while splitting off the ""
-            if(!rolledIn){
-                data = data.substring(1,data.length-1);
-            }
+            //We only take off the "" if the file comes from the Write command
+            //No need if it comes from Rolling In a Process from Memory
             if(data.length>60){
                 let chainNum =Math.floor(data.length/60);
                 //Check if we have as many TSBs available as we need Chains
                 //If so find all pointers, put in array
+                listOfPointers = this.findAvailTSB(chainNum);
+                //If we do not have enough blocks return an error and stop writing
+                if(!listOfPointers){
+                    _StdOut.putText("Error: Cannot Write to File. Not Enough Space!");
+                    return;
+                }
+                else{
+                    //We continue with the array of pointers
+                }
             }
-
-
-
+            else{
+                listOfPointers=["0:0:0"];
+            }
             //If so:
             //Look for file with name: If exists, grab TSB, If not Display File Not Found Error
             for(let i=0;i<_Disk.sectors;i++){
@@ -126,6 +170,59 @@ module TSOS {
                         //If names match, we found file. So now we write into it
                         if(oldStr==newStr){
                             //Get pointer from Value
+                            let firstPoint = block[1]+":"+block[2]+":"+block[3];
+                            let pointer = firstPoint;
+                            let pos=0;
+                            while(pointer!=="0:0:0"){
+                                //Get the block we are writing into
+                                let tempBlock = sessionStorage.getItem(pointer);
+                                let currentPointer=pointer;
+                                //Rewrite 0's into the entire block to wipe it clean before writing:
+                                let wipeData="";
+                                for(let x=0;x<_Disk.dataSize;x++){
+                                    wipeData=wipeData.concat("00");
+                                }
+                                //Available bit and Pointer bits
+                                wipeData.concat("0000");
+                                tempBlock=wipeData;
+                                //Now that the block data has be reset to all 0's(124 to be exact) we will update the available bits, pointers, and data:
+                                //Set its available bit to 1
+                                tempBlock=this.setCharAt(tempBlock,0,"1");
+                                //Get the pointer for this block
+                                pointer=listOfPointers[pos];
+                                //Split the string (in -:-:- format) into an array
+                                let nums = pointer.split(":");
+                                //Set the pointer bits to the pointer
+                                tempBlock=this.setCharAt(tempBlock,1,nums[0]);
+                                tempBlock=this.setCharAt(tempBlock,2,nums[1]);
+                                tempBlock=this.setCharAt(tempBlock,3,nums[2]);
+                                //Check if this blocks pointer is 0:0:0
+                                if(pointer=="0:0:0"){
+                                    //If this is the last block we are writing into, its possible it won't use the whole size of the block
+                                    //So I just pushed 00's into it until we hit that size
+                                    let temp = 120;//total characters in each block(60, but each is 00, so 120)
+                                    while(data.length<temp){
+                                        data = data.concat("00");
+                                    }
+                                }
+                                //Write 60 into the block:
+                                //Grab the first 60
+                                let writeData = data.substring(0,119);
+                                //Set the total data to be the data without the part we are writing in
+                                data = data.substring(120);
+                                //Put the all the block data together:
+                                let newData = tempBlock.substring(0,4)+writeData.toUpperCase()+tempBlock.substring(4+writeData.length,tempBlock.length);
+                                //Set the data at the pointer equal to the
+                                sessionStorage.setItem(currentPointer,newData);
+                                //update which pointer we will be on
+                                pos++;
+
+
+                            }
+                            TSOS.Control.UpdateDiskDisplay();
+                            _StdOut.putText("Write Successful!");
+                            return;
+
                             //Write into first block
                             //get next pointer from pointer array
                             //set the current TSB's pointer to that pointer
@@ -135,6 +232,9 @@ module TSOS {
                     }
                 }
             }
+            //If we get here and haven't done the write, that means the file does not exist, or we couldn't find it
+            _StdOut.putText("Error: File Not Found!");
+            return;
 
         }
 
@@ -157,7 +257,7 @@ module TSOS {
 
                     }
                     else{
-                        //change so it doenst happen after every check, only when all is checked
+                        //change so it doesn't happen after every check, only when all is checked
                         //_StdOut.putText("No File Space Left!");
                     }
                     }

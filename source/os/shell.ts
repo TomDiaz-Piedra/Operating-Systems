@@ -521,12 +521,17 @@ module TSOS {
                 _krnDiskDriver.createFile(args);
             }
         }
-        public shellWrite(args){
+        public shellWrite(args:any[]){
             if(args.length<2 || args.length>2){
-                _StdOut.putText("Missing File name or write data");
+                _StdOut.putText("Error: Too Many Parameters! Remember a filename and data only. No Spaces Allowed!");
             }
             else{
-                //do write with filename and data
+
+                let data = args[1];
+                //_StdOut.putText(data);
+                data = data.substring(1,data.length-1);
+               // _StdOut.putText(data);
+                _krnDiskDriver.writeFile(args[0],args[1]);
             }
         }
 

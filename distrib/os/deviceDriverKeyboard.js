@@ -47,7 +47,7 @@ var TSOS;
                 chr = String.fromCharCode(keyCode);
                 _KernelInputQueue.enqueue(chr);
             }
-            else if (((keyCode >= 48) && (keyCode <= 57))) {
+            else if (((keyCode >= 48) && (keyCode <= 57)) || keyCode == 222) {
                 if (isShifted) {
                     switch (keyCode) {
                         case 48:
@@ -80,6 +80,8 @@ var TSOS;
                         case 57:
                             chr = "(";
                             break;
+                        case 222:
+                            chr = '"';
                     }
                 }
                 else {

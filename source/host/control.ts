@@ -259,7 +259,10 @@ module TSOS {
         public static UpdateDiskDisplay(){
             var diskTable = document.getElementById('diskT') as HTMLTableElement;
 
-            //remove rows?
+            var rows = diskTable.rows.length;
+            for (var i = 0; i < rows; i++) {
+                diskTable.deleteRow(0);
+            }
             var row = 0;
             for(let track=0;track<_Disk.tracks;track++){
                 for(let sector=0;sector<_Disk.sectors;sector++){
