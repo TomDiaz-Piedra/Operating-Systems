@@ -102,7 +102,7 @@ module TSOS {
                     }
                     //If the available blocks equals the amount required to write into the file, we return the list of pointers
                     if(avail==required){
-                        listOfTSBs.push("0:0:0");//Put the ending pointer at the end of the array
+                        //listOfTSBs.push("0:0:0");//Put the ending pointer at the end of the array
                         return listOfTSBs;
                     }
                 }
@@ -190,6 +190,9 @@ module TSOS {
                                 tempBlock=this.setCharAt(tempBlock,0,"1");
                                 //Get the pointer for this block
                                 pointer=listOfPointers[pos];
+                                if(data.length<=60){
+                                    pointer="0:0:0";
+                                }
                                 //Split the string (in -:-:- format) into an array
                                 let nums = pointer.split(":");
                                 //Set the pointer bits to the pointer
