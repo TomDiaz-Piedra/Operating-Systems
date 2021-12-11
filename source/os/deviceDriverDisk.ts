@@ -60,6 +60,13 @@ module TSOS {
                                 let filename=this.asciiConvert(name);
                                 let fileStr = filename.toString();
                                 let final = fileStr.split(",").join("");
+                                let wipeData="";
+                                for(let x=0;x<_Disk.dataSize;x++){
+                                    wipeData=wipeData.concat("00");
+                                }
+                                wipeData = block.substring(0,4)+wipeData;
+                                block = wipeData;
+
                                 block = block.substring(0,4)+final.toUpperCase()+block.substring(4+filename.length,block.length);
 
                                 //Tell user it was successful and update the session storage and gui display!
@@ -82,6 +89,63 @@ module TSOS {
                 _StdOut.putText("File "+name+" Already Exists!");
             }
         }
+
+        public deleteFile(filename) {
+            filename = this.asciiConvert(filename);
+            for (let i = 0; i < _Disk.sectors; i++) {
+                for (let j = 0; j < _Disk.blocks; j++) {
+                    if (i == 0 && j == 0) {
+                        //ignore Master Boot Record
+                    } else {
+                        var tsb = 0 + ":" + i + ":" + j;
+                        var block = sessionStorage.getItem(tsb);
+
+                        if (block[0] == "1") {
+
+                            //check if its name is equal to the one we want to read
+                            let existFileName = block.substring(4);
+                            let checkName = existFileName.split("00");
+                            var oldName = [];
+
+                            for (var x = 0, charsLength = checkName[0].length; x < charsLength; x += 2) {
+                                oldName.push(checkName[0].substring(x, x + 2));
+                            }
+                            let oldStr = "";
+                            let newStr = "";
+                            for (let z = 0; z < oldName.length; z++) {
+                                newStr = newStr.concat(filename[z]);
+                                oldStr = oldStr.concat(oldName[z]);
+
+                            }
+                            newStr = newStr.toUpperCase();
+
+                            if (oldStr == newStr) { //if they equal each other we get all pointers set available bit to 0
+                                let data = sessionStorage.getItem(tsb);
+                                data = this.setCharAt(data,0,"0");
+                                sessionStorage.setItem(tsb,data);
+                                this.deleteBits(tsb);
+                                _StdOut.putText("Deleted File Successfully!");
+                                TSOS.Control.UpdateDiskDisplay();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            //If we have not completed a delete by now, we did not find the file
+            _StdOut.putText("File Not Found");
+        }
+        public deleteBits(tsb){
+            let pointer = tsb;
+            while(pointer!=="0:0:0"){
+                let block = sessionStorage.getItem(pointer);
+                block = this.setCharAt(block,0,"0");
+                sessionStorage.setItem(pointer,block);
+                pointer=block[1]+":"+block[2]+":"+block[3];
+
+            }
+        }
+
         //Goes through each data block and adds it to a string, The string of all data in the file will be returned
         public readFile(filename) {
             filename = this.asciiConvert(filename);
@@ -133,7 +197,7 @@ module TSOS {
             }
             return str;
         }
-        //Uses filename's pointer to find first TSB and all pointers after, if any
+        //Uses filename's pointer to find first TSB and all pointers after, if any and then read the data
         public getPointers(pointer){
             //Get first block's data
             let start = sessionStorage.getItem(pointer);

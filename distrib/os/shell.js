@@ -57,6 +57,9 @@ var TSOS;
             //Read
             sc = new TSOS.ShellCommand(this.shellRead, "read", "- Read File Data Given its name");
             this.commandList[this.commandList.length] = sc;
+            //Delete
+            sc = new TSOS.ShellCommand(this.shellDelete, "delete", "- Delete a file with given name");
+            this.commandList[this.commandList.length] = sc;
             //Process State
             sc = new TSOS.ShellCommand(this.shellPS, "ps", "- Display all Process and their states.");
             this.commandList[this.commandList.length] = sc;
@@ -426,15 +429,21 @@ var TSOS;
                 _StdOut.putText("Reading File " + args);
                 let read = _krnDiskDriver.readFile(args);
                 let ans = "";
-                //let temp = read.split("00");
                 for (let i = 0; i < read.length; i++) {
                     let str = read[i];
                     str = str.split("00");
                     let temp = _krnDiskDriver.hex_to_ascii(str);
                     ans = ans.concat(temp);
                 }
-                //let  output = _krnDiskDriver.hex_to_ascii(temp);
                 _StdOut.putText(ans);
+            }
+        }
+        shellDelete(args) {
+            if (args == null || isFormatted == false || args.length > 1) {
+                _StdOut.putText("Error: Missing Parameters or Disk is Not Formatted!");
+            }
+            else {
+                _krnDiskDriver.deleteFile(args);
             }
         }
         shellCube(args) {
