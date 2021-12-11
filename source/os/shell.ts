@@ -91,6 +91,12 @@ module TSOS {
                 "- Write into File. Must be within Quotation Marks");
             this.commandList[this.commandList.length] = sc;
 
+            //Read
+            sc = new ShellCommand(this.shellRead,
+                "read",
+                "- Read File Data Given its name");
+            this.commandList[this.commandList.length] = sc;
+
             //Process State
             sc = new ShellCommand(this.shellPS,
                 "ps",
@@ -522,7 +528,7 @@ module TSOS {
             }
         }
         public shellWrite(args:any[]){
-            if(args.length<2 || args.length>2){
+            if(args.length<2 || args.length>2 || isFormatted==false){
                 _StdOut.putText("Error: Too Many Parameters! Remember a filename and data only. No Spaces Allowed!");
             }
             else{
@@ -532,6 +538,25 @@ module TSOS {
                 data = data.substring(1,data.length-1);
                // _StdOut.putText(data);
                 _krnDiskDriver.writeFile(args[0],args[1]);
+            }
+        }
+        shellRead(args){
+            if(args==null || isFormatted==false || args.length>1){
+                _StdOut.putText("Error: Missing Parameters or Disk is Not Formatted!");
+            }
+            else{
+                _StdOut.putText("Reading File "+args);
+                let read =_krnDiskDriver.readFile(args);
+                let ans = "";
+                //let temp = read.split("00");
+                for(let i =0;i<read.length;i++){
+                    let str = read[i];
+                    str =str.split("00");
+                    let temp = _krnDiskDriver.hex_to_ascii(str);
+                    ans = ans.concat(temp);
+                }
+                //let  output = _krnDiskDriver.hex_to_ascii(temp);
+                _StdOut.putText(ans);
             }
         }
 

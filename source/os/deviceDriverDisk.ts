@@ -82,6 +82,75 @@ module TSOS {
                 _StdOut.putText("File "+name+" Already Exists!");
             }
         }
+        //Goes through each data block and adds it to a string, The string of all data in the file will be returned
+        public readFile(filename) {
+            filename = this.asciiConvert(filename);
+            for (let i = 0; i < _Disk.sectors; i++) {
+                for (let j = 0; j < _Disk.blocks; j++) {
+                    if (i == 0 && j == 0) {
+                        //ignore Master Boot Record
+                    } else {
+                        var tsb = 0 + ":" + i + ":" + j;
+                        var block = sessionStorage.getItem(tsb);
+
+                        if (block[0] == "1") {
+
+                            //check if its name is equal to the one we want to read
+                            let existFileName = block.substring(4);
+                            let checkName = existFileName.split("00");
+                            var oldName = [];
+
+                            for (var x = 0, charsLength = checkName[0].length; x < charsLength; x += 2) {
+                                oldName.push(checkName[0].substring(x, x + 2));
+                            }
+                            let oldStr = "";
+                            let newStr = "";
+                            for (let z = 0; z < oldName.length; z++) {
+                                newStr = newStr.concat(filename[z]);
+                                oldStr = oldStr.concat(oldName[z]);
+
+                            }
+                            newStr = newStr.toUpperCase();
+
+                            if (oldStr == newStr) { //if they equal each other we get all pointers and read the file
+                                let pointer = block[1]+":"+block[2]+":"+block[3];
+                                return this.getPointers(pointer);
+                            }
+                        }
+                    }
+                }
+            }
+            //If we have not returned the read yet, that means we could not find anything
+            _StdOut.putText("Error: File Not Found");
+            return;
+        }
+        public  hex_to_ascii(data)
+        {
+            var hex  = data.toString();
+            var str = '';
+            for (var n = 0; n < hex.length; n+=2) {
+                str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+            }
+            return str;
+        }
+        //Uses filename's pointer to find first TSB and all pointers after, if any
+        public getPointers(pointer){
+            //Get first block's data
+            let start = sessionStorage.getItem(pointer);
+            //All data from file will combined into 1 string here
+            var readData=[];
+            readData=readData.concat(start.substring(4));
+            //next if any
+            let nextBlock = start[1]+":"+start[2]+":"+start[3];
+            while(nextBlock!=="0:0:0"){
+                let block = sessionStorage.getItem(nextBlock);
+                nextBlock = block[1]+":"+block[2]+":"+block[3];
+                readData.push(block.substring(4));
+
+            }
+            return readData;
+        }
+
         //Helper Function to get a list of free blocks that we can write into
         public findAvailTSB(required){
             required=required-1; //Did this because we already have 1 block to save it into(the block allocated after creating the file)
@@ -226,11 +295,6 @@ module TSOS {
                             _StdOut.putText("Write Successful!");
                             return;
 
-                            //Write into first block
-                            //get next pointer from pointer array
-                            //set the current TSB's pointer to that pointer
-                            //write into next block
-                            //repeat until done, fill last one with 0s as needed
                         }
                     }
                 }
