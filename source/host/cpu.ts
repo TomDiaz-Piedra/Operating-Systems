@@ -153,6 +153,8 @@ module TSOS {
             }
             else{
                 _StdOut.putText("Error Invalid OP Code: "+this.IR+" ");
+                //Print out pc, ir, acc, etc
+               // _StdOut.putText("PC: "+this.PC+" IR: "+this.IR+" ");
                 _Scheduler.programEnd(this.currentProgram, false);
             }
             if(this.IR=="0"){
@@ -619,6 +621,7 @@ module TSOS {
                 _StdOut.putText("Error: PC Invalid! Prepare for Neurotoxin!");
                 this.step=7;
             }
+
 
             //Fetch
             if(this.step==1){

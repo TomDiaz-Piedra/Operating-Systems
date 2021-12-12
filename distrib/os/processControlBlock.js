@@ -21,6 +21,11 @@ var TSOS;
             this.offset;
         }
         init() {
+            if (this.segment == null) {
+                //If the pcb does not have a segment because it is going onto the disk, we just skip giving it its offset base and limit registers
+                return;
+            }
+            this.segment = this.segment;
             this.base = this.segment.Start;
             this.limit = this.segment.End;
             this.offset = this.segment.offset;

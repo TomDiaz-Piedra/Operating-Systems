@@ -70,7 +70,7 @@ module TSOS {
                                 block = block.substring(0,4)+final.toUpperCase()+block.substring(4+filename.length,block.length);
 
                                 //Tell user it was successful and update the session storage and gui display!
-                                _StdOut.putText("File "+name+" was created!");
+
                                 sessionStorage.setItem(tsb,block);
                                 TSOS.Control.UpdateDiskDisplay();
                                 return;
@@ -124,7 +124,7 @@ module TSOS {
                                 data = this.setCharAt(data,0,"0");
                                 sessionStorage.setItem(tsb,data);
                                 this.deleteBits(tsb);
-                                _StdOut.putText("Deleted File Successfully!");
+
                                 TSOS.Control.UpdateDiskDisplay();
                                 return;
                             }
@@ -188,8 +188,7 @@ module TSOS {
             _StdOut.putText("Error: File Not Found");
             return;
         }
-        public  hex_to_ascii(data)
-        {
+        public  hex_to_ascii(data) {
             var hex  = data.toString();
             var str = '';
             for (var n = 0; n < hex.length; n+=2) {
@@ -197,11 +196,21 @@ module TSOS {
             }
             return str;
         }
+
+        public ascii_to_hex(data) {
+            var ans = [];
+            for (var n = 0, l = data.length; n < l; n ++)
+            {
+                var hex = Number(data.charCodeAt(n)).toString(16);
+                ans.push(hex);
+            }
+            return ans.join('');
+        }
         //Uses filename's pointer to find first TSB and all pointers after, if any and then read the data
         public getPointers(pointer){
             //Get first block's data
             let start = sessionStorage.getItem(pointer);
-            //All data from file will combined into 1 string here
+            //All data from file will combine into 1 string here
             var readData=[];
             readData=readData.concat(start.substring(4));
             //next if any
@@ -343,9 +352,9 @@ module TSOS {
                                 }
                                 //Write 60 into the block:
                                 //Grab the first 60
-                                let writeData = data.substring(0,119);
+                                let writeData = data.substring(0,120); //119
                                 //Set the total data to be the data without the part we are writing in
-                                data = data.substring(120);
+                                data = data.substring(120);//120
                                 //Put the all the block data together:
                                 let newData = tempBlock.substring(0,4)+writeData.toUpperCase()+tempBlock.substring(4+writeData.length,tempBlock.length);
                                 //Set the data at the pointer equal to the
@@ -356,7 +365,7 @@ module TSOS {
 
                             }
                             TSOS.Control.UpdateDiskDisplay();
-                            _StdOut.putText("Write Successful!");
+
                             return;
 
                         }

@@ -90,6 +90,8 @@ var TSOS;
             yreg.innerHTML = pcb.yReg;
             let zflag = pcbRow.insertCell(7);
             zflag.innerHTML = pcb.zReg;
+            let location = pcbRow.insertCell(8);
+            location.innerHTML = pcb.location;
             //cell.innerHTML="0";
             //cell.classList.add("pcb"+i.toString());
         }
@@ -117,6 +119,8 @@ var TSOS;
             yreg.innerHTML = pcb.yReg.toString(16).toUpperCase();
             let zflag = r.cells[7];
             zflag.innerHTML = pcb.zReg.toString(16).toUpperCase();
+            let location = r.cells[8];
+            location.innerHTML = pcb.location;
         }
         static hostLog(msg, source = "?") {
             // Note the OS CLOCK.
@@ -162,6 +166,7 @@ var TSOS;
             _ProcessControlBlock = new TSOS.processControlBlock();
             readyqueue = new TSOS.Queue();
             residentqueue = new TSOS.Queue();
+            _Swapper = new TSOS.swapper();
             _Scheduler = new TSOS.Scheduler();
             _Dispatcher = new TSOS.Dispatcher();
             _Disk = new TSOS.Disk();

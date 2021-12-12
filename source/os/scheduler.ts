@@ -35,6 +35,7 @@ module TSOS{
            // }
 
         }
+        //Add methods for FCFS and Priority and then make a method with a switch case for each of these, and replace the roundRobin in CPU with the switch case method
         public roundRobin(){
 
             //If the process is still running, but its quantum has run out we perform a context switch

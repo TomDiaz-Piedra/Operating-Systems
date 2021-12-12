@@ -126,6 +126,8 @@ var TSOS;
             }
             else {
                 _StdOut.putText("Error Invalid OP Code: " + this.IR + " ");
+                //Print out pc, ir, acc, etc
+                // _StdOut.putText("PC: "+this.PC+" IR: "+this.IR+" ");
                 _Scheduler.programEnd(this.currentProgram, false);
             }
             if (this.IR == "0") {

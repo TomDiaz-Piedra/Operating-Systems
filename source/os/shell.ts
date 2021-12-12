@@ -392,6 +392,19 @@ module TSOS {
                 if(!validSpace){
                     //If no space:
                     //Load program into Disk, do not give it a segment
+                    let pcb = new TSOS.processControlBlock();
+                    pcb.segment=null;
+                    pcb.init();
+                    pcb.location="Disk";
+                    let filename=pcb.pid.toString();
+                    filename="*"+filename;
+                    _krnDiskDriver.createFile(filename);
+                    _krnDiskDriver.writeFile(filename,val);
+                    residentqueue.enqueue(pcb);
+                    residentlist.push(pcb);
+                    TSOS.Control.addPcb(pcb);
+                    _NextAvailablePID++;
+                    _StdOut.putText("Valid: PID = "+pcb.pid +" Saved To Disk");
                     //When we swap a process from memory to disk:
                     // 1. Load it into memory
                     // 2. Free up the memory segment by Clearing it completely(Only after saving it onto the disk!)
@@ -405,7 +418,7 @@ module TSOS {
                     // 3. Clear segment, and assign it to the process going back on memory
                     // 4. load the process into the segment in memory
 
-                    _StdOut.putText("No Space Left in Memory!!!");
+                    //_StdOut.putText("No Space Left in Memory!!!");
                 }
                 else {
                     _StdOut.putText("InValid");
@@ -531,19 +544,21 @@ module TSOS {
             }
             else if(isFormatted && args!=""){
                 _krnDiskDriver.createFile(args);
+                _StdOut.putText("File "+args+" was created!");
             }
         }
         public shellWrite(args:any[]){
             if(args.length<2 || args.length>2 || isFormatted==false){
-                _StdOut.putText("Error: Too Many Parameters! Remember a filename and data only. No Spaces Allowed!");
+                _StdOut.putText("Error: Invalid Number of Parameters! Remember a filename and data only. No Spaces Allowed!");
             }
             else{
 
                 let data = args[1];
                 //_StdOut.putText(data);
                 data = data.substring(1,data.length-1);
-               // _StdOut.putText(data);
+                //_StdOut.putText(data);
                 _krnDiskDriver.writeFile(args[0],args[1]);
+                _StdOut.putText("Write Successful!");
             }
         }
         shellRead(args){
@@ -569,6 +584,7 @@ module TSOS {
             }
             else{
                 _krnDiskDriver.deleteFile(args);
+                _StdOut.putText("Deleted File Successfully!");
             }
         }
 

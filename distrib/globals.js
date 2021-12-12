@@ -31,7 +31,8 @@ var _Scheduler;
 var _Dispatcher;
 var _Disk;
 var _krnDiskDriver;
-var _NextAvailablePID = 0;
+var _Swapper;
+var _NextAvailablePID = 1; //was 0, testing if my file problem is because of names with 0 in it
 var isFormatted = false;
 var readyqueue;
 var residentqueue;

@@ -99,6 +99,8 @@ module TSOS {
             yreg.innerHTML=pcb.yReg;
             let zflag = pcbRow.insertCell(7);
             zflag.innerHTML=pcb.zReg;
+            let location = pcbRow.insertCell(8);
+            location.innerHTML=pcb.location;
             //cell.innerHTML="0";
             //cell.classList.add("pcb"+i.toString());
 
@@ -127,6 +129,8 @@ module TSOS {
             yreg.innerHTML=pcb.yReg.toString(16).toUpperCase();
             let zflag = r.cells[7];
             zflag.innerHTML=pcb.zReg.toString(16).toUpperCase();
+            let location = r.cells[8];
+            location.innerHTML=pcb.location;
 
         }
 
@@ -191,10 +195,12 @@ module TSOS {
             _ProcessControlBlock = new processControlBlock();
             readyqueue = new Queue();
             residentqueue= new Queue();
+            _Swapper = new swapper();
             _Scheduler = new Scheduler();
             _Dispatcher = new Dispatcher();
             _Disk = new Disk();
             _Disk.init();
+
 
 
             // ... then set the host clock pulse ...
