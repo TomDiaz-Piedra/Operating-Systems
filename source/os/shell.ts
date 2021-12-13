@@ -103,6 +103,18 @@ module TSOS {
                 "- Delete a file with given name");
             this.commandList[this.commandList.length] = sc;
 
+            //SelectSchedule
+            sc = new ShellCommand(this.shellSchedule,
+                "schedule",
+                "- Select Scheduling Algorithm");
+            this.commandList[this.commandList.length] = sc;
+
+            //ShowSchedule
+            sc = new ShellCommand(this.shellShowSchedule,
+                "currentsch",
+                "- Show the current Scheduling Algorithm");
+            this.commandList[this.commandList.length] = sc;
+
             //Process State
             sc = new ShellCommand(this.shellPS,
                 "ps",
@@ -392,33 +404,25 @@ module TSOS {
                 if(!validSpace){
                     //If no space:
                     //Load program into Disk, do not give it a segment
-                    let pcb = new TSOS.processControlBlock();
-                    pcb.segment=null;
-                    pcb.init();
-                    pcb.location="Disk";
-                    let filename=pcb.pid.toString();
-                    filename="*"+filename;
-                    _krnDiskDriver.createFile(filename);
-                    _krnDiskDriver.writeFile(filename,val);
-                    residentqueue.enqueue(pcb);
-                    residentlist.push(pcb);
-                    TSOS.Control.addPcb(pcb);
-                    _NextAvailablePID++;
-                    _StdOut.putText("Valid: PID = "+pcb.pid +" Saved To Disk");
-                    //When we swap a process from memory to disk:
-                    // 1. Load it into memory
-                    // 2. Free up the memory segment by Clearing it completely(Only after saving it onto the disk!)
-                    //When we put the process in the Disk onto the main memory:
-                    // IF THE PROCESS WAS NEVER LOADED ONTO MEMORY
-                    // 1. Give the process the first available segment
-                    // 2. Load the process into said segment(Using a swapper method that can load with params)
-                    // IF THE PROCESS WAS PREVIOUSLY LOADED
-                    // 1. WIPE ITS OLD SEGMENT(if not already done)
-                    // 2. Save Process whose quantum ran out onto disk
-                    // 3. Clear segment, and assign it to the process going back on memory
-                    // 4. load the process into the segment in memory
+                    if(isFormatted) {
+                        let pcb = new TSOS.processControlBlock();
+                        pcb.segment = null;
+                        pcb.init();
+                        pcb.location = "Disk";
+                        let filename = pcb.pid.toString();
+                        filename = "*" + filename;
+                        _krnDiskDriver.createFile(filename);
+                        _krnDiskDriver.writeFile(filename, val);
+                        residentqueue.enqueue(pcb);
+                        residentlist.push(pcb);
+                        TSOS.Control.addPcb(pcb);
+                        _NextAvailablePID++;
+                        _StdOut.putText("Valid: PID = " + pcb.pid + " Saved To Disk");
+                    }
+                    else{
+                        _StdOut.putText("Error: Cannot Load Process - No Space In Memory - Disk Not Formatted");
+                    }
 
-                    //_StdOut.putText("No Space Left in Memory!!!");
                 }
                 else {
                     _StdOut.putText("InValid");
@@ -439,6 +443,14 @@ module TSOS {
 
                     found = true;
                     temp.state = "ready";
+                    if(temp.location=="Disk"){
+                        //dequeue the first program in resident queue and put it on the Disk
+                        let prog = residentqueue.dequeue();
+                        _CPU.currentProgram=prog;
+                        //Now roll in roll out: Needed to put a program on the CPU because my Roll in/out only move the program that is on CPU(Most Recently Used)
+                        _Swapper.rollOut();
+                        _Swapper.rollIn(temp);
+                    }
                     TSOS.Control.updatePCB(temp);
                     readyqueue.enqueue(temp);
                     _CPU.startCPU();
@@ -587,6 +599,59 @@ module TSOS {
                 _StdOut.putText("Deleted File Successfully!");
             }
         }
+        shellSchedule(args){
+            if(args=="rr"||args=="fcfs"||args=="priority") {
+                currentSchedule = args;
+                if(currentSchedule=="rr"){
+                    Quantum=6;
+                    //Reset Quantum to Default
+                }
+                if(currentSchedule=="fcfs"){
+                    //Keep it Round Robin, but with a Max Safe Integer as the Quantum
+                    _Scheduler.fcfs();
+                }
+                if(currentSchedule=="priority"&&_CPU.isExecuting){
+                    //Still Keep it Round Robin, but re order the readyqueue by priority and make the Quantum Max Safe Integer again
+                    //Why do more work, when non-preemptive can be accomplished through a very large Quantum
+                    //We only allow this when the CPU is not running, as it can cause complications re ordering the ready queue while process are running
+
+                }
+            }
+            else{
+                _StdOut.putText("Error: Invalid Scheduling Algorithm");
+                _StdOut.advanceLine();
+                _StdOut.putText("Valid Scheduling Algorithms: rr, fcfs, priority");
+            }
+        }
+        shellShowSchedule(){
+            if(currentSchedule=="rr"){
+                _StdOut.putText("Current Scheduling Algorithm: Round Robin");
+
+            }
+            else if (currentSchedule=="fcfs"){
+                _StdOut.putText("Current Scheduling Algorithm: First Come First Serve");
+
+            }
+            else if(currentSchedule=="priority"){
+                _StdOut.putText("Current Scheduling Algorithm: Priority");
+            }
+
+        }
+        //Show all non hidden files
+        shellList(){
+
+        }
+        //Copy file info to new file: first arg is name of file you want to copy, second is the file name you want to create that is a copy
+        shellCopy(args){
+
+        }
+        //Rename File: First arg is the original file name, second is the new name you want to change it to
+        shellRename(args){
+            //Find file name:
+            //Either make a function to just change the name by getting the tsb and rewriting it, or
+            //just do that
+        }
+
 
         public shellCube(args: string[]) {
             let cube = document.getElementById('cube') as HTMLImageElement;

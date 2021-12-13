@@ -152,9 +152,8 @@ module TSOS {
 
             }
             else{
-                _StdOut.putText("Error Invalid OP Code: "+this.IR+" ");
-                //Print out pc, ir, acc, etc
-               // _StdOut.putText("PC: "+this.PC+" IR: "+this.IR+" ");
+                //if the OP code is not valid, we Set the IR to 00 and end the program
+                this.IR="00";
                 _Scheduler.programEnd(this.currentProgram, false);
             }
             if(this.IR=="0"){
@@ -371,12 +370,14 @@ module TSOS {
                 let a2=this.hexValue(_MemoryAccessor.getLOB(), 2);
                 let adr=a2.concat(a1);
                 let a = parseInt(adr, 16)-1;
+
                 //If the memory boundaries are not violated, the current operation will run as normal
                 //If the bounds are violated, the operation will not take place
                 //Had to do it this way because without the IF statement, it would cancel the process properly if the bounds were violated, but still attempt to finish
                 //the operation(ex. loading something from memory to the accumulator would set the accumulator to undefined as the memory in the segment has been wiped)
                 //Even if it was not set up to reset the memory of a terminated process to all Ox00s it would instead end up violating the memory bounds anyways
                 let valid:Boolean = _MemoryAccessor.checkBounds(a);
+
 
                 if(valid){
                     _MemoryAccessor.setMAR(a+this.currentProgram.segment.offset);
@@ -487,8 +488,11 @@ module TSOS {
                 //Even if it was not set up to reset the memory of a terminated process to all Ox00s it would instead end up violating the memory bounds anyways
                 let valid:Boolean = _MemoryAccessor.checkBounds(a);
                 if(valid){
+                    if(a+this.currentProgram.segment.offset>=20){
+                        a=a-1;
+                    }
                     _MemoryAccessor.setMAR(a+this.currentProgram.segment.offset);
-                    //this.tempAdr=a+this.currentProgram.segment.offset;
+
                     _MemoryAccessor.read();
                     let num = _MemoryAccessor.getMDR();
                     this.Acc = num+1;

@@ -125,9 +125,8 @@ var TSOS;
                 || this.IR == "A0" || this.IR == "D0" || this.IR == "AA" || this.IR == "A8" || this.IR == "8A" || this.IR == "98" || this.IR == "0" || this.IR == "FF" || this.IR == "EA") {
             }
             else {
-                _StdOut.putText("Error Invalid OP Code: " + this.IR + " ");
-                //Print out pc, ir, acc, etc
-                // _StdOut.putText("PC: "+this.PC+" IR: "+this.IR+" ");
+                //if the OP code is not valid, we Set the IR to 00 and end the program
+                this.IR = "00";
                 _Scheduler.programEnd(this.currentProgram, false);
             }
             if (this.IR == "0") {
@@ -425,8 +424,10 @@ var TSOS;
                 //Even if it was not set up to reset the memory of a terminated process to all Ox00s it would instead end up violating the memory bounds anyways
                 let valid = _MemoryAccessor.checkBounds(a);
                 if (valid) {
+                    if (a + this.currentProgram.segment.offset >= 20) {
+                        a = a - 1;
+                    }
                     _MemoryAccessor.setMAR(a + this.currentProgram.segment.offset);
-                    //this.tempAdr=a+this.currentProgram.segment.offset;
                     _MemoryAccessor.read();
                     let num = _MemoryAccessor.getMDR();
                     this.Acc = num + 1;

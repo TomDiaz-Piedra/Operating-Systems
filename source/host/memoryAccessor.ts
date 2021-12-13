@@ -83,7 +83,7 @@ module TSOS{
         }
 
         public checkBounds(adr){
-            if(adr>255 || adr<0){
+            if(adr>255 || adr<-1){
                 _StdOut.putText("Error: Memory Infraction! Prepare for Neurotoxin! ADR: "+adr);
                 _Scheduler.programEnd(_CPU.currentProgram,false);
                 return false;

@@ -27,7 +27,7 @@ module TSOS{
         //Make a checkLoc method to check where the next process is: if in mem,we just run loadNew with the nextProg, if in disk do roll in roll out and then do loadNew
         public saveState(){
             var onDisk;
-            _CPU.isExecuting=false;//stop cpu while we switch
+            //_CPU.isExecuting=false;//stop cpu while we switch
            if(readyqueue.isEmpty()){
                 //Nothing
             }

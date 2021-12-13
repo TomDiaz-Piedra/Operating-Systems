@@ -12,6 +12,7 @@ module TSOS{
 
             //On program end we clear the segment, set its state to terminated,and update the pcb display
             program.state="terminated";
+            program.location="Moon";
             TSOS.Control.updatePCB(program);
             _MemoryAccessor.clearSegment(program.segment.Number);
             _StdOut.putText(" Process PID: "+program.pid+" Turnaround: "+program.turnaround+" Wait: "+program.wait);
@@ -39,7 +40,7 @@ module TSOS{
         public roundRobin(){
 
             //If the process is still running, but its quantum has run out we perform a context switch
-            if(_CPU.currentProgram.quanta>=Quantum){
+            if(_CPU.currentProgram.quanta>=Quantum && !readyqueue.isEmpty()){
                 //_Dispatcher.contextSwitch();
                 //_CPU.isExecuting=false;
                 _KernelInterruptQueue.enqueue(new TSOS.Interrupt(CONTEXT_SWITCH, [0]));
@@ -47,6 +48,28 @@ module TSOS{
 
             }
             return false;
+        }
+        public fcfs(){
+            Quantum=Number.MAX_SAFE_INTEGER;
+        }
+        //maybe implement
+        public priority(){
+
+        }
+        public schedulingAlg(){
+            if(currentSchedule=="rr"){
+                this.roundRobin();
+                return true;
+            }
+            else if(currentSchedule=="fcfs"){
+                //We do Nothing
+                return false;
+            }
+            else if(currentSchedule=="priority"){
+                //IDK
+                return false;
+            }
+
         }
 
     }
