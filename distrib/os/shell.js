@@ -513,15 +513,12 @@ var TSOS;
                     _StdOut.putText("Scheduling Changed to First Come First Serve");
                     _Scheduler.fcfs();
                 }
-                else if (currentSchedule == "priority" && !_CPU.isExecuting) {
+                else if (currentSchedule == "priority") {
                     _StdOut.putText("Scheduling Changed to Non-Preemptive Priority");
                     _Scheduler.priority();
                     //Still Keep it Round Robin, but re order the readyqueue by priority and make the Quantum Max Safe Integer again
                     //Why do more work, when non-preemptive can be accomplished through a very large Quantum
                     //We only allow this when the CPU is not running, as it can cause complications re ordering the ready queue while process are running
-                }
-                else if (currentSchedule == "priority" && _CPU.isExecuting) {
-                    _StdOut.putText("Error: Cannot Switch to Non-Preemptive Priority While CPU is Running");
                 }
             }
             else {
