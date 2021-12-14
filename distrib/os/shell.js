@@ -64,7 +64,7 @@ var TSOS;
             sc = new TSOS.ShellCommand(this.shellSchedule, "schedule", "- Select Scheduling Algorithm");
             this.commandList[this.commandList.length] = sc;
             //ShowSchedule
-            sc = new TSOS.ShellCommand(this.shellShowSchedule, "currentsch", "- Show the current Scheduling Algorithm");
+            sc = new TSOS.ShellCommand(this.shellShowSchedule, "getschedule", "- Show the current Scheduling Algorithm");
             this.commandList[this.commandList.length] = sc;
             //List
             sc = new TSOS.ShellCommand(this.shellList, "ls", "- List all User Files in Memory(No Swap Files)");
@@ -518,7 +518,6 @@ var TSOS;
                     _Scheduler.priority();
                     //Still Keep it Round Robin, but re order the readyqueue by priority and make the Quantum Max Safe Integer again
                     //Why do more work, when non-preemptive can be accomplished through a very large Quantum
-                    //We only allow this when the CPU is not running, as it can cause complications re ordering the ready queue while process are running
                 }
             }
             else {

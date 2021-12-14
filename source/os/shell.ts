@@ -111,7 +111,7 @@ module TSOS {
 
             //ShowSchedule
             sc = new ShellCommand(this.shellShowSchedule,
-                "currentsch",
+                "getschedule",
                 "- Show the current Scheduling Algorithm");
             this.commandList[this.commandList.length] = sc;
 
