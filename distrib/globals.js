@@ -35,6 +35,7 @@ var _Swapper;
 var _NextAvailablePID = 1; //was 0, testing if my file problem is because of names with 0 in it
 var isFormatted = false;
 var currentSchedule = "rr";
+var defaultPriority = 10;
 var readyqueue;
 var residentqueue;
 var residentlist = [];

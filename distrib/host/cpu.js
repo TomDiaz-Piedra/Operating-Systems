@@ -69,6 +69,9 @@ var TSOS;
                 let killedProg = readyqueue.dequeue();
                 this.currentProgram = killedProg;
                 //this.programEnd();
+                if (this.currentProgram.location == "Disk") {
+                    _KernelInterruptQueue.enqueue(new TSOS.Interrupt(CONTEXT_SWITCH, [0]));
+                }
                 _KernelInterruptQueue.enqueue(new TSOS.Interrupt(PROGRAM_END, [this.currentProgram, false]));
             }
             // _MemoryAccessor.clearMem();
@@ -84,13 +87,6 @@ var TSOS;
                 else {
                     readyqueue.enqueue(temp);
                 }
-            }
-        }
-        //Checks if the Program is trying to access Memory outside of its segment
-        checkBoundsMem(adr) {
-            if (adr > this.currentProgram.segment.End || adr < this.currentProgram.segment.Start) {
-                _StdOut.putText("Error: Memory Boundary Infraction! Prepare for Neurotoxin!");
-                _Scheduler.programEnd(this.currentProgram, false);
             }
         }
         updateCurrent() {

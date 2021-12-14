@@ -54,22 +54,30 @@ module TSOS{
         }
         //maybe implement
         public priority(){
+            //Set Quantum to Max Int because priority is non-preemptive, so we are never stopping a process unless it is complete
+            Quantum=Number.MAX_SAFE_INTEGER;
+            //Make an empty array to put all processes in
+            let tempArr = [];
+            //Put all processes in resident queue into temp array
+            while(!residentqueue.isEmpty()){
+                let process = residentqueue.dequeue();
+                tempArr.push(process);
+            }
+            //Sort array by priority and then put the sorted processes back into resident queue
+            tempArr.sort(this.compare_priority);
+            for(let i = 0;i<tempArr.length;i++){
+                residentqueue.enqueue(tempArr[i]);
+            }
 
         }
-        public schedulingAlg(){
-            if(currentSchedule=="rr"){
-                this.roundRobin();
-                return true;
+        public compare_priority( a, b ) {
+            if ( a.priority < b.priority){
+                return -1;
             }
-            else if(currentSchedule=="fcfs"){
-                //We do Nothing
-                return false;
+            if ( a.priority > b.priority){
+                return 1;
             }
-            else if(currentSchedule=="priority"){
-                //IDK
-                return false;
-            }
-
+            return 0;
         }
 
     }

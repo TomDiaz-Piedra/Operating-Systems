@@ -34,7 +34,7 @@ module TSOS {
             //load
             sc = new ShellCommand(this.shellLoad,
                 "load",
-                "- Loads user input.");
+                "- Loads user input. Gives Default Priority if non given");
             this.commandList[this.commandList.length] = sc;
 
             //clearMem
@@ -113,6 +113,12 @@ module TSOS {
             sc = new ShellCommand(this.shellShowSchedule,
                 "currentsch",
                 "- Show the current Scheduling Algorithm");
+            this.commandList[this.commandList.length] = sc;
+
+            //List
+            sc = new ShellCommand(this.shellList,
+                "ls",
+                "- List all User Files in Memory(No Swap Files)");
             this.commandList[this.commandList.length] = sc;
 
             //Process State
@@ -346,6 +352,7 @@ module TSOS {
         }
 
         public shellLoad(args) {
+            var priority=parseInt(args,10);
             var load: any;
             var val: string;
             var validSpace:boolean=true;
@@ -371,12 +378,22 @@ module TSOS {
                 let start=0;
                 let end=2;
 
+
+
                 //Creates a new PCB and assigns its segment to the first available
                 //The base, limit, and offset registers are then initialized
                 let pcb = new TSOS.processControlBlock();
                 pcb.segment=seg;
                 pcb.init();
                 pcb.location="Memory";
+                if(Number.isInteger(priority)){
+                    pcb.priority=priority;
+                }
+                if(isNaN(priority)||priority==null){
+                    _StdOut.putText("Error: Priority given is Not a Number. Giving Process Default Priority");
+                    _StdOut.advanceLine();
+                    pcb.priority=defaultPriority;
+                }
 
                 while (start<test) {
                     let byte = val.substring(start,end);
@@ -417,6 +434,14 @@ module TSOS {
                         residentlist.push(pcb);
                         TSOS.Control.addPcb(pcb);
                         _NextAvailablePID++;
+                        if(Number.isInteger(priority)){
+                            pcb.priority=priority;
+                        }
+                        if(isNaN(priority)||priority==null){
+                            _StdOut.putText("Error: Priority given is Not a Number. Giving Process Default Priority");
+                            _StdOut.advanceLine();
+                            pcb.priority=defaultPriority;
+                        }
                         _StdOut.putText("Valid: PID = " + pcb.pid + " Saved To Disk");
                     }
                     else{
@@ -427,6 +452,10 @@ module TSOS {
                 else {
                     _StdOut.putText("InValid");
                 }
+            }
+            //If after loading or attempting to load, a process; the scheduling algorithm is set to priority we will re-sort the resident queue
+            if(currentSchedule=="priority"){
+                _Scheduler.priority();
             }
 
             re.lastIndex=0;
@@ -524,6 +553,10 @@ module TSOS {
             _MemoryAccessor.clearMem();
         }
         public shellQuantum(args){
+            if(currentSchedule=="fcfs"||currentSchedule=="priority"){
+                _StdOut.putText("Cannot Change Quantum While Scheduling Algorithm is NOT Round Robin!");
+                return;
+            }
             if(args<=0 || isNaN(args)){
                 _StdOut.putText("Invalid Quantum!");
 
@@ -595,6 +628,11 @@ module TSOS {
                 _StdOut.putText("Error: Missing Parameters or Disk is Not Formatted!");
             }
             else{
+                if(args[0]=="*"){
+                    _StdOut.putText("Error: Cannot Delete Swap Files!");
+                    return;
+                }
+
                 _krnDiskDriver.deleteFile(args);
                 _StdOut.putText("Deleted File Successfully!");
             }
@@ -603,18 +641,25 @@ module TSOS {
             if(args=="rr"||args=="fcfs"||args=="priority") {
                 currentSchedule = args;
                 if(currentSchedule=="rr"){
+                    _StdOut.putText("Scheduling Changed to Round Robin");
                     Quantum=6;
                     //Reset Quantum to Default
                 }
-                if(currentSchedule=="fcfs"){
+                else if(currentSchedule=="fcfs"){
                     //Keep it Round Robin, but with a Max Safe Integer as the Quantum
+                    _StdOut.putText("Scheduling Changed to First Come First Serve");
                     _Scheduler.fcfs();
                 }
-                if(currentSchedule=="priority"&&_CPU.isExecuting){
+                else if(currentSchedule=="priority"&&!_CPU.isExecuting){
+                    _StdOut.putText("Scheduling Changed to Non-Preemptive Priority");
+                    _Scheduler.priority();
                     //Still Keep it Round Robin, but re order the readyqueue by priority and make the Quantum Max Safe Integer again
                     //Why do more work, when non-preemptive can be accomplished through a very large Quantum
                     //We only allow this when the CPU is not running, as it can cause complications re ordering the ready queue while process are running
 
+                }
+                else if(currentSchedule=="priority"&&_CPU.isExecuting){
+                    _StdOut.putText("Error: Cannot Switch to Non-Preemptive Priority While CPU is Running");
                 }
             }
             else{
@@ -639,7 +684,16 @@ module TSOS {
         }
         //Show all non hidden files
         shellList(){
-
+            let names=_krnDiskDriver.listFiles();
+            if(names.length<=0){
+                _StdOut.putText("Error: No Files on Disk");
+            }
+            else{
+                _StdOut.putText("Files on Disk:");
+                for(let i=0;i<names.length;i++){
+                    _StdOut.putText(" "+names[i]+",");
+                }
+            }
         }
         //Copy file info to new file: first arg is name of file you want to copy, second is the file name you want to create that is a copy
         shellCopy(args){
