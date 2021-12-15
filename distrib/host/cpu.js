@@ -35,28 +35,13 @@ var TSOS;
             this.isExecuting = false;
         }
         startCPU() {
-            //this.currentProgram=null;
             let program = readyqueue.dequeue();
             this.currentProgram = program;
-            //this.loadProgramState();
             this.PC = this.currentProgram.pc;
             this.step = 1;
             this.currentProgram.state = "running";
             TSOS.Control.updatePCB(this.currentProgram);
             this.isExecuting = true;
-        }
-        programEnd() {
-            _MemoryAccessor.clearSegment(this.currentProgram.segment.Number);
-            this.currentProgram.state = "terminated";
-            TSOS.Control.updatePCB(this.currentProgram);
-            let done = readyqueue.isEmpty();
-            if (done) {
-                this.isExecuting = false;
-            }
-            else {
-                this.isExecuting = false;
-                _Scheduler.roundRobin();
-            }
         }
         //Terminates current program in CPU
         kill() {
@@ -74,7 +59,6 @@ var TSOS;
                 }
                 _KernelInterruptQueue.enqueue(new TSOS.Interrupt(PROGRAM_END, [this.currentProgram, false]));
             }
-            // _MemoryAccessor.clearMem();
         }
         //Kills a non running process on the readyqueue
         killNotRunning(pid) {
@@ -112,7 +96,6 @@ var TSOS;
         }
         fetch() {
             //get op code from code at position program counter
-            //this.op=this.mmu.mem.memory[this.pc];
             //check if the process is violating its memory boundaries
             _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
             _MemoryAccessor.read();
@@ -136,7 +119,6 @@ var TSOS;
         }
         decode1() {
             if (this.IR == "AD" || this.IR == "8D" || this.IR == "6D" || this.IR == "AE" || this.IR == "AC" || this.IR == "EC" || this.IR == "EE") {
-                //this.mmu.setHOB(this.mmu.mem.memory[this.pc]);
                 _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
                 _MemoryAccessor.setHOB(_MemoryAccessor.getMDR());
@@ -149,7 +131,6 @@ var TSOS;
             }
         }
         decode2() {
-            //this.mmu.setLOB(this.mmu.mem.memory[this.pc]);
             _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
             _MemoryAccessor.read();
             _MemoryAccessor.setLOB(_MemoryAccessor.getMDR());
@@ -158,10 +139,8 @@ var TSOS;
         execute1() {
             //A9 - Load Accumulator with a Constant - 4 CPU Cycles
             if (this.IR == "A9") {
-                //this.acc=this.mmu.mem.memory[this.pc];
                 _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
-                //let num = this.checkComp(_MemoryAccessor.getMDR());
                 let num = _MemoryAccessor.getMDR();
                 this.Acc = num;
                 this.PC++;
@@ -172,10 +151,8 @@ var TSOS;
             if (this.IR == "A2") {
                 _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
-                //let num = this.checkComp(_MemoryAccessor.getMDR());
                 let num = _MemoryAccessor.getMDR();
                 this.setXreg(num);
-                //this.setXreg(this.mmu.mem.memory[this.pc]);
                 this.PC++;
                 this.updateCurrent();
                 this.step = 1;
@@ -184,10 +161,8 @@ var TSOS;
             if (this.IR == "A0") {
                 _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
                 _MemoryAccessor.read();
-                //let num = this.checkComp(_MemoryAccessor.getMDR());
                 let num = _MemoryAccessor.getMDR();
                 this.setYreg(num);
-                //this.setYreg(this.mmu.mem.memory[this.pc]);
                 this.PC++;
                 this.updateCurrent();
                 this.step = 1;
@@ -200,8 +175,6 @@ var TSOS;
                     this.step = 1;
                 }
                 if (this.zFlag == 0) {
-                    //this.PC++
-                    //  this.checkBounds(this.PC+this.currentProgram.segment.offset);
                     _MemoryAccessor.setMAR(this.PC + this.currentProgram.segment.offset);
                     _MemoryAccessor.read();
                     const hex = _MemoryAccessor.getMDR();
@@ -213,7 +186,6 @@ var TSOS;
                     if (this.PC > 255) {
                         this.PC = this.PC - 256;
                     }
-                    //  this.checkBounds(this.PC);
                     this.updateCurrent();
                     this.step = 1;
                 }
@@ -257,7 +229,6 @@ var TSOS;
                 if (valid) {
                     _MemoryAccessor.setMAR(a + this.currentProgram.segment.offset);
                     _MemoryAccessor.read();
-                    //let num = this.checkComp(_MemoryAccessor.getMDR());
                     let num = _MemoryAccessor.getMDR();
                     this.setXreg(num);
                     this.PC++;
@@ -347,8 +318,6 @@ var TSOS;
                     _MemoryAccessor.setMAR(a + this.currentProgram.segment.offset);
                     _MemoryAccessor.read();
                     let num = this.checkComp(_MemoryAccessor.getMDR());
-                    //let num = this.mmu.mem.memory[parseInt(adr,16)-1];
-                    //num=this.mmu.getMDR();
                     this.Acc = this.Acc + num;
                     this.PC++;
                     this.updateCurrent();
@@ -391,7 +360,6 @@ var TSOS;
             }
             //8A - Load Accumulator from X register - 4 Cycles
             if (this.IR == "8A") {
-                //let num = this.checkComp(this.getXreg());
                 let num = _MemoryAccessor.getMDR();
                 this.Acc = num;
                 this.PC++;
@@ -400,7 +368,6 @@ var TSOS;
             }
             //98 - Load Accumulator from Y register - 4 Cycles
             if (this.IR == "98") {
-                //let num = this.checkComp(this.getYreg());
                 let num = _MemoryAccessor.getMDR();
                 this.Acc = num;
                 this.PC++;
@@ -429,7 +396,6 @@ var TSOS;
                     this.Acc = num + 1;
                     _MemoryAccessor.setMDR(this.Acc);
                     _MemoryAccessor.write();
-                    //_StdOut.putText("MDR: "+_MemoryAccessor.getMDR());
                     this.updateCurrent();
                     //this.step = 5;
                     this.PC++;
@@ -449,8 +415,6 @@ var TSOS;
                     let out = this.getYreg();
                     out = this.checkComp(out);
                     _StdOut.putText(out.toString());
-                    //console.log(out.toString());
-                    //this.pc++;
                     this.step = 1;
                 }
                 if (this.getXreg() == 2) {
@@ -460,12 +424,8 @@ var TSOS;
                     this.currentProgram.pc = this.yReg - 1;
                     while (this.yReg != 0x00) {
                         //output memory at spot yreg
-                        //let out ="";
-                        //    this.checkBounds(this.PC+this.currentProgram.segment.offset);
                         let n = _Memory.mem[this.PC + this.currentProgram.segment.offset].toString(16);
-                        //out = _Memory.mem[this.yReg];
                         let output = String.fromCharCode(parseInt(n, 16));
-                        //_StdOut.putText(String.fromCharCode(out));
                         _StdOut.putText(output);
                         this.PC++;
                         this.updateCurrent();
@@ -473,14 +433,11 @@ var TSOS;
                         this.yReg = _Memory.mem[this.PC + this.currentProgram.segment.offset];
                     }
                     this.PC = tempPC;
-                    //_Console.advanceLine();
-                    //_OsShell.putPrompt();
                     this.step = 1;
                 }
             }
             //EA - No Operation
             if (this.IR == "EA") {
-                //this.PC++;
                 this.updateCurrent();
                 this.step = 1;
             }
@@ -522,7 +479,6 @@ var TSOS;
                 _MemoryAccessor.setMDR(this.Acc);
                 _MemoryAccessor.write();
                 _StdOut.putText("MAR: " + _MemoryAccessor.getMAR() + " MDR: " + _MemoryAccessor.getMDR());
-                //this.mmu.mem.memory[parseInt(adr,16)-1]=this.acc;
                 this.PC++;
                 this.updateCurrent();
                 this.step = 1;
@@ -530,11 +486,7 @@ var TSOS;
         }
         cycle() {
             _Kernel.krnTrace('CPU cycle');
-            // TODO: Accumulate CPU usage and profiling statistics here.
             //Kills Program if it goes out of its Memory Range
-            // if(this.PC>this.currentProgram.End || this.PC < this.currentProgram.Start){
-            //    this.kill();
-            //  }
             if (this.PC > 255 || this.PC < 0) {
                 _StdOut.putText("Error: PC Invalid! Prepare for Neurotoxin!");
                 this.step = 7;
@@ -583,14 +535,10 @@ var TSOS;
                 this.writeBack();
             }
             else if (this.step == 7) {
-                //this.currentProgram.state='terminated';
-                //_Scheduler.programEnd(this.currentProgram,false);
                 _KernelInterruptQueue.enqueue(new TSOS.Interrupt(PROGRAM_END, [this.currentProgram, false]));
-                //this.programEnd();
             }
             TSOS.Control.updatePCB(this.currentProgram);
             TSOS.Control.UpdateMemDisplay();
-            // Do the real work here. Be sure to set this.isExecuting appropriately.
         }
     }
     TSOS.Cpu = Cpu;

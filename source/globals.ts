@@ -13,7 +13,7 @@
 //
 
 
-const APP_NAME: string    = "TDP OS";   // 'cause Bob and I were at a loss for a better name.
+const APP_NAME: string    = "PotatOS";
 const APP_VERSION: string = "7.20";   // What did you expect? 0.07
 
 const CPU_CLOCK_INTERVAL: number = 100;   // This is in ms (milliseconds) so 1000 = 1 second.
@@ -39,7 +39,7 @@ var _Dispatcher: TSOS.Dispatcher;
 var _Disk: TSOS.Disk;
 var _krnDiskDriver: TSOS.DeviceDriverDisk;
 var _Swapper: TSOS.swapper;
-var _NextAvailablePID = 1;//was 0, testing if my file problem is because of names with 0 in it
+var _NextAvailablePID = 1;
 var isFormatted = false;
 var currentSchedule ="rr";
 var defaultPriority = 10;

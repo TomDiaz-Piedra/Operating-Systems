@@ -37,7 +37,6 @@ var TSOS;
                 if (pcb.pid == pid) {
                     ans = pcb;
                 }
-                //residentqueue.enqueue(pcb);
             }
             return ans;
         }

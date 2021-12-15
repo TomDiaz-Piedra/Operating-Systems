@@ -69,6 +69,12 @@ var TSOS;
             //List
             sc = new TSOS.ShellCommand(this.shellList, "ls", "- List all User Files in Memory(No Swap Files)");
             this.commandList[this.commandList.length] = sc;
+            //Copy
+            sc = new TSOS.ShellCommand(this.shellCopy, "copy", "- Copies Data from one file into another. 1st Parameter is the file being copied, 2nd is the new files name");
+            this.commandList[this.commandList.length] = sc;
+            //Rename
+            sc = new TSOS.ShellCommand(this.shellRename, "rename", "- Rename File, 1st parameter is old file name, 2nd is file's new name");
+            this.commandList[this.commandList.length] = sc;
             //Process State
             sc = new TSOS.ShellCommand(this.shellPS, "ps", "- Display all Process and their states.");
             this.commandList[this.commandList.length] = sc;
@@ -322,7 +328,7 @@ var TSOS;
                             pcb.priority = priority;
                         }
                         if (isNaN(priority) || priority == null) {
-                            _StdOut.putText("Error: Priority given is Not a Number. Giving Process Default Priority");
+                            _StdOut.putText("Priority Not Given or Not a Number. Default Priority Assigned.");
                             _StdOut.advanceLine();
                             pcb.priority = defaultPriority;
                         }
@@ -400,7 +406,6 @@ var TSOS;
             else if (pcb.state == 'ready') {
                 _CPU.killNotRunning(args);
             }
-            // _StdOut.advanceLine();
         }
         shellPS() {
             let size = residentlist.length;
@@ -463,10 +468,8 @@ var TSOS;
             }
             else {
                 let data = args[1];
-                //_StdOut.putText(data);
                 data = data.substring(1, data.length - 1);
-                //_StdOut.putText(data);
-                _krnDiskDriver.writeFile(args[0], args[1]);
+                _krnDiskDriver.writeFile(args[0], data); //args[1]
                 _StdOut.putText("Write Successful!");
             }
         }
@@ -476,15 +479,21 @@ var TSOS;
             }
             else {
                 _StdOut.putText("Reading File " + args);
+                _StdOut.advanceLine();
                 let read = _krnDiskDriver.readFile(args);
-                let ans = "";
-                for (let i = 0; i < read.length; i++) {
-                    let str = read[i];
-                    str = str.split("00");
-                    let temp = _krnDiskDriver.hex_to_ascii(str);
-                    ans = ans.concat(temp);
+                if (read == false) {
+                    return;
                 }
-                _StdOut.putText(ans);
+                else {
+                    let ans = "";
+                    for (let i = 0; i < read.length; i++) {
+                        let str = read[i];
+                        str = str.split("00");
+                        let temp = _krnDiskDriver.hex_to_ascii(str);
+                        ans = ans.concat(temp);
+                    }
+                    _StdOut.putText(ans);
+                }
             }
         }
         shellDelete(args) {
@@ -552,12 +561,43 @@ var TSOS;
         }
         //Copy file info to new file: first arg is name of file you want to copy, second is the file name you want to create that is a copy
         shellCopy(args) {
+            if (args.length > 2 || args.length < 2) {
+                _StdOut.putText("Error: Missing or Too Many Parameters.");
+            }
+            else {
+                let data = _krnDiskDriver.readFile(args[0]);
+                //Concat all data into 1 string (in array chunks of 60 right now)
+                let finalData = "";
+                if (data == false) {
+                }
+                else {
+                    for (let i = 0; i < data.length; i++) {
+                        let newD = data[i].split("00").join("");
+                        finalData = finalData.concat(_krnDiskDriver.hex_to_ascii(newD));
+                    }
+                    finalData = finalData.split(" ").join("");
+                    finalData = finalData.split("00").join("");
+                    let newFile = _krnDiskDriver.createFile(args[1]);
+                    if (newFile) {
+                        _krnDiskDriver.writeFile(args[1], finalData);
+                        _StdOut.putText("Copied File " + args[0] + " To File " + args[1]);
+                    }
+                    else {
+                    }
+                }
+            }
         }
         //Rename File: First arg is the original file name, second is the new name you want to change it to
         shellRename(args) {
             //Find file name:
             //Either make a function to just change the name by getting the tsb and rewriting it, or
             //just do that
+            if (args > 2 || args < 2) {
+                _StdOut.putText("Error: Invalid Number of Parameters");
+            }
+            else {
+                _krnDiskDriver.renameFile(args[0], args[1]);
+            }
         }
         shellCube(args) {
             let cube = document.getElementById('cube');

@@ -73,10 +73,9 @@ module TSOS {
 
                                 sessionStorage.setItem(tsb, block);
                                 TSOS.Control.UpdateDiskDisplay();
-                                return;
+                                return true;
 
                             } else {
-                                //_StdOut.putText("No Directories Left!");
                             }
                         }
                     }
@@ -86,6 +85,7 @@ module TSOS {
             } else {
                 //Nothing, the name was taken, so try again, ha ha ha!
                 _StdOut.putText("File " + name + " Already Exists!");
+                return false;
             }
         }
 
@@ -186,7 +186,7 @@ module TSOS {
             }
             //If we have not returned the read yet, that means we could not find anything
             _StdOut.putText("Error: File Not Found");
-            return;
+            return false;
         }
 
         public hex_to_ascii(data) {
@@ -503,6 +503,56 @@ module TSOS {
                 }
             }
             return listofNames;
+        }
+
+        public renameFile(originalName,newName){
+            originalName = this.asciiConvert(originalName);
+            for (let i = 0; i < _Disk.sectors; i++) {
+                for (let j = 0; j < _Disk.blocks; j++) {
+                    if (i == 0 && j == 0) {
+                        //ignore Master Boot Record
+                    } else {
+                        var tsb = 0 + ":" + i + ":" + j;
+                        var block = sessionStorage.getItem(tsb);
+
+                        if (block[0] == "1") {
+
+                            //check if its name is equal to the one we want to read
+                            let existFileName = block.substring(4);
+                            let checkName = existFileName.split("00");
+                            var oldName = [];
+
+                            for (var x = 0, charsLength = checkName[0].length; x < charsLength; x += 2) {
+                                oldName.push(checkName[0].substring(x, x + 2));
+                            }
+                            let oldStr = "";
+                            let newStr = "";
+                            for (let z = 0; z < oldName.length; z++) {
+                                newStr = newStr.concat(originalName[z]);
+                                oldStr = oldStr.concat(oldName[z]);
+
+                            }
+                            newStr = newStr.toUpperCase();
+
+                            if (oldStr == newStr) {
+                                let filename = this.asciiConvert(newName);
+                                let fileStr = filename.toString();
+                                let final = fileStr.split(",").join("");
+                                let wipeData = "";
+                                for (let x = 0; x < _Disk.dataSize; x++) {
+                                    wipeData = wipeData.concat("00");
+                                }
+                                wipeData = block.substring(0, 4) + wipeData;
+                                block = wipeData;
+
+                                block = block.substring(0, 4) + final.toUpperCase() + block.substring(4 + filename.length, block.length);
+                                sessionStorage.setItem(tsb,block);
+                                TSOS.Control.UpdateDiskDisplay();
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

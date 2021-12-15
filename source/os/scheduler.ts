@@ -17,7 +17,6 @@ module TSOS{
             _MemoryAccessor.clearSegment(program.segment.Number);
             _StdOut.putText(" Process PID: "+program.pid+" Turnaround: "+program.turnaround+" Wait: "+program.wait);
             //if the current program is terminated we want to either swap to the next one, or stop the cpu if there are none left
-            // if(_CPU.currentProgram.state=='terminated'){
             //If there are no programs left we stop the cpu
             if(ifReady){
 
@@ -34,11 +33,9 @@ module TSOS{
                         this.priority();
                     }
                     _KernelInterruptQueue.enqueue(new TSOS.Interrupt(CONTEXT_SWITCH, [0]));
-                    //_Dispatcher.contextSwitch();
 
                 }
             }
-           // }
 
         }
         //Add methods for FCFS and Priority and then make a method with a switch case for each of these, and replace the roundRobin in CPU with the switch case method
@@ -46,8 +43,6 @@ module TSOS{
 
             //If the process is still running, but its quantum has run out we perform a context switch
             if(_CPU.currentProgram.quanta>=Quantum && !readyqueue.isEmpty()){
-                //_Dispatcher.contextSwitch();
-                //_CPU.isExecuting=false;
                 _KernelInterruptQueue.enqueue(new TSOS.Interrupt(CONTEXT_SWITCH, [0]));
                 return true;
 

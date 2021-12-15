@@ -63,7 +63,7 @@ module TSOS{
                     ans = pcb;
 
                 }
-                //residentqueue.enqueue(pcb);
+
             }
             return ans;
         }

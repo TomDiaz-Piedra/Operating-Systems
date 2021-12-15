@@ -17,13 +17,7 @@ var TSOS;
             let finalData = "";
             for (let i = 0; i < data.length; i++) {
                 finalData = finalData.concat(_krnDiskDriver.hex_to_ascii(data[i]));
-                //_StdOut.putText(_krnDiskDriver.hex_to_ascii(data[i]));
-                //finalData=finalData.concat(data[i]);
             }
-            //_StdOut.putText("ROLLIN: "+finalData);
-            //_StdOut.advanceLine();
-            //finalData=_krnDiskDriver.ascii_to_hex(finalData);
-            //_StdOut.putText(finalData);
             //Load into Memory similarly to load command in Shell:
             //Find Available Segment
             let seg = _MemoryManager.getValid();
@@ -33,8 +27,7 @@ var TSOS;
             nextProgram.init();
             //Use Memory Accessor to Read and Write Data from Disk into Memory
             let adr = 0;
-            //finalData=finalData.split("\u").join("");
-            finalData = finalData.substring(0, 256); //was 255 just in case
+            finalData = finalData.substring(0, 256);
             let len = finalData.length;
             let start = 0;
             let end = 2;
@@ -79,10 +72,7 @@ var TSOS;
                 }
                 data = data + check0;
             }
-            //_StdOut.putText("ROLLOUT: "+data);
-            //_StdOut.advanceLine();
             data = data.split(" ").join("");
-            //_StdOut.putText("SIZE: "+data.length+"  CODE: "+data);
             //Then write that string onto disk
             _krnDiskDriver.writeFile(filename, data);
             //Clear Seg
