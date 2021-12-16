@@ -105,7 +105,7 @@ module TSOS {
 
             //SelectSchedule
             sc = new ShellCommand(this.shellSchedule,
-                "schedule",
+                "setschedule",
                 "- Select Scheduling Algorithm");
             this.commandList[this.commandList.length] = sc;
 
